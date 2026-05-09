@@ -1,0 +1,1263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DNPI 3.0 — Implementation Plan (visual story)</title>
+<meta name="description" content="A visual implementation plan for Dynamic NPI 3.0 — milestones, epics, data flow, mockups, code snippets, and open decisions." />
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #ffffff;
+    --panel-soft: #f7f8fb;
+    --ink: #0e1430;
+    --ink-soft: #475070;
+    --muted: #6b7392;
+    --line: #e6e9f2;
+    --line-strong: #c9cee0;
+    --accent: #2f5bff;
+    --accent-soft: #e9efff;
+    --good: #1f8a55;
+    --good-soft: #e3f5eb;
+    --warn: #b8730d;
+    --warn-soft: #fff3df;
+    --bad: #c0322b;
+    --bad-soft: #fde6e3;
+    --info: #1e6fa3;
+    --info-soft: #e2f0fa;
+    --neutral: #44506b;
+    --neutral-soft: #eef0f6;
+    --shadow: 0 1px 2px rgba(14,20,48,.05), 0 8px 24px rgba(14,20,48,.06);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 400px at 80% -100px, #1a2566 0%, transparent 60%),
+      linear-gradient(180deg, #0b1020 0, #0b1020 280px, #f3f5fb 280px, #f3f5fb 100%);
+    min-height: 100vh;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, pre, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+
+  /* Layout */
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+  header.hero {
+    color: #eef1ff;
+    padding: 48px 0 36px;
+  }
+  header.hero .eyebrow { color: #9fb0ff; letter-spacing: .08em; text-transform: uppercase; font-size: 12px; font-weight: 600; }
+  header.hero h1 { font-size: 38px; line-height: 1.15; margin: 8px 0 10px; letter-spacing: -.01em; }
+  header.hero p.lede { color: #cdd6ff; font-size: 17px; max-width: 820px; margin: 0; }
+  header.hero .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  header.hero .chip { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); color: #e8edff; padding: 4px 10px; border-radius: 999px; font-size: 12px; }
+
+  main { padding: 28px 0 80px; }
+
+  /* TOC */
+  nav.toc {
+    position: sticky; top: 0; z-index: 5;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: saturate(140%) blur(10px);
+    border-bottom: 1px solid var(--line);
+    margin-top: -16px;
+    padding: 10px 0;
+  }
+  nav.toc .wrap { display: flex; gap: 6px; overflow-x: auto; }
+  nav.toc a {
+    padding: 6px 10px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  nav.toc a:hover { background: var(--accent-soft); color: var(--accent); text-decoration: none; }
+
+  section.section { margin: 28px 0; }
+  section.section > .wrap > h2 {
+    font-size: 22px; margin: 0 0 6px; letter-spacing: -.005em;
+  }
+  section.section > .wrap > p.section-lede {
+    color: var(--ink-soft); margin: 0 0 18px; max-width: 880px;
+  }
+  .section-anchor { display:block; position: relative; top: -56px; visibility: hidden; }
+
+  /* Cards */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 18px;
+    box-shadow: var(--shadow);
+  }
+  .card h3 { margin: 0 0 6px; font-size: 16px; }
+  .card p { margin: 6px 0; color: var(--ink-soft); }
+  .grid { display: grid; gap: 14px; }
+  .grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 880px) {
+    .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
+    header.hero h1 { font-size: 30px; }
+  }
+
+  /* Pills / status */
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600; border: 1px solid; }
+  .pill.dot::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .pill.good { background: var(--good-soft); color: var(--good); border-color: #c4e7d4; }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); border-color: #f3dcb1; }
+  .pill.bad  { background: var(--bad-soft);  color: var(--bad);  border-color: #f3c7c2; }
+  .pill.info { background: var(--info-soft); color: var(--info); border-color: #c4ddee; }
+  .pill.neutral { background: var(--neutral-soft); color: var(--neutral); border-color: var(--line-strong); }
+  .pill.accent { background: var(--accent-soft); color: var(--accent); border-color: #c5d2ff; }
+
+  /* Tables */
+  table.tbl { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  table.tbl th, table.tbl td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 14px; }
+  table.tbl th { background: var(--panel-soft); color: var(--ink-soft); font-weight: 600; font-size: 12.5px; letter-spacing: .02em; text-transform: uppercase; }
+  table.tbl tr:last-child td { border-bottom: 0; }
+  table.tbl td.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; color: #1a2447; }
+
+  /* Code blocks */
+  pre.code {
+    margin: 0;
+    background: #0d1430;
+    color: #d8defb;
+    border-radius: 12px;
+    border: 1px solid #1a2056;
+    padding: 14px 16px;
+    overflow: auto;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  pre.code .k { color: #ffb454; }
+  pre.code .s { color: #8ee0a0; }
+  pre.code .n { color: #f4a3c4; }
+  pre.code .c { color: #6d77a8; font-style: italic; }
+  pre.code .p { color: #8fb3ff; }
+
+  /* Callouts */
+  .callout { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 8px; color: #1d2c66; margin: 10px 0; }
+  .callout.warn { border-color: var(--warn); background: var(--warn-soft); color: #5b3b06; }
+  .callout.bad  { border-color: var(--bad); background: var(--bad-soft); color: #5b1410; }
+  .callout.good { border-color: var(--good); background: var(--good-soft); color: #0e3d27; }
+
+  /* Mockups */
+  .mock {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .mock .titlebar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, #f8f9fc, #eef1f8);
+    border-bottom: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .mock .titlebar .dots { display: inline-flex; gap: 6px; margin-right: 6px; }
+  .mock .titlebar .dots span { width: 10px; height: 10px; border-radius: 50%; background: #d6dae6; display: inline-block; }
+  .mock .titlebar .url { font-family: ui-monospace, monospace; padding: 3px 10px; background: #fff; border: 1px solid var(--line); border-radius: 999px; font-size: 11.5px; color: var(--muted); }
+  .mock .body { padding: 16px; }
+
+  .row { display: flex; gap: 14px; }
+  .row > * { flex: 1; }
+
+  /* Diagram container */
+  .diagram {
+    background: #fff;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius);
+    padding: 14px;
+    overflow: auto;
+  }
+
+  /* Provider verification mockup */
+  .pv-card { border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+  .pv-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .pv-head h4 { margin: 0; font-size: 15px; }
+  .pv-head .npi { color: var(--muted); font-size: 12px; }
+  .pv-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin-top: 10px; border-top: 1px solid var(--line); }
+  .pv-col { padding: 10px 12px; border-right: 1px solid var(--line); }
+  .pv-col:last-child { border-right: 0; }
+  .pv-col .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 6px; }
+  .pv-col .val { font-size: 14px; color: var(--ink); }
+  .pv-col .sub { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+  .pv-col.center { background: var(--panel-soft); }
+  .pv-row { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px dashed var(--line); }
+  .pv-row .label { color: var(--ink-soft); width: 130px; font-size: 12.5px; }
+  .pv-row .v { font-size: 13.5px; }
+
+  /* Audit timeline mockup */
+  .timeline { position: relative; padding-left: 22px; }
+  .timeline::before { content:""; position: absolute; left: 8px; top: 4px; bottom: 4px; width: 2px; background: var(--line-strong); border-radius: 2px; }
+  .tl-item { position: relative; padding: 6px 0 14px; }
+  .tl-item::before { content:""; position: absolute; left: -18px; top: 10px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--accent); }
+  .tl-item.good::before { background: var(--good); box-shadow: 0 0 0 1px var(--good); }
+  .tl-item.warn::before { background: var(--warn); box-shadow: 0 0 0 1px var(--warn); }
+  .tl-item .when { font-size: 11.5px; color: var(--muted); }
+  .tl-item .what { font-size: 13px; }
+  .tl-item .who { font-size: 12px; color: var(--ink-soft); }
+
+  /* File pass mockup table */
+  .filerun th, .filerun td { font-size: 12.5px; }
+  .filerun .badge { font-size: 11px; padding: 2px 7px; border-radius: 999px; border: 1px solid; }
+
+  /* Milestone bars */
+  .ms-bar { display: grid; grid-template-columns: 60px 1fr; align-items: center; gap: 12px; margin: 6px 0; }
+  .ms-track { height: 22px; background: var(--panel-soft); border: 1px solid var(--line); border-radius: 999px; position: relative; overflow: hidden; }
+  .ms-fill { position: absolute; top:0; bottom:0; border-radius: 999px; display: flex; align-items: center; padding: 0 10px; color: #fff; font-size: 11.5px; font-weight: 600; }
+  .ms-fill.m1 { left: 0%; width: 35%; background: linear-gradient(90deg, #2f5bff, #5e82ff); }
+  .ms-fill.m2 { left: 30%; width: 45%; background: linear-gradient(90deg, #1a8a55, #3eaa74); }
+  .ms-fill.m3 { left: 70%; width: 30%; background: linear-gradient(90deg, #8a5fe0, #b083ff); }
+  .ms-label { font-weight: 600; color: var(--ink-soft); font-size: 12.5px; }
+
+  /* Epic cards */
+  .epic { display: flex; gap: 12px; padding: 14px; }
+  .epic .num { width: 36px; height: 36px; flex: none; border-radius: 8px; display: grid; place-items: center; font-weight: 700; color: #fff; background: var(--accent); }
+  .epic.must .num { background: var(--bad); }
+  .epic.serious .num { background: var(--warn); }
+  .epic.gated .num { background: var(--neutral); }
+  .epic .body h4 { margin: 0; font-size: 14.5px; }
+  .epic .body p { margin: 4px 0 6px; color: var(--ink-soft); font-size: 13px; }
+
+  /* Footnote / muted */
+  .muted { color: var(--muted); font-size: 12.5px; }
+
+  /* Print-friendly */
+  @media print {
+    body { background: #fff; color: #000; }
+    nav.toc { display: none; }
+    .card, .mock, .diagram { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">DNPI 3.0 · Visual implementation plan</div>
+    <h1>One profile-backed verification story — built in three milestones, nine epics</h1>
+    <p class="lede">
+      DNPI 3.0 turns Dynamic NPI from a "find every gap" feature into a profile-backed product:
+      consistent statuses across PTApp and the API, alias triangulation against primary sources,
+      a separate pre-go-live file pass, post-go-live monitoring that doesn't auto-dismiss real work,
+      and an internal audit lens for "what changed?" — shipped behind RBAC and pilot flags.
+    </p>
+    <div class="meta">
+      <span class="chip">Last updated 2026-05-08</span>
+      <span class="chip">Status: parent ERD + 9 epic stubs drafted</span>
+      <span class="chip">Phase 0 decisions still open: 6 of 8</span>
+      <span class="chip">Pilot before broad rollout</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="wrap">
+    <a href="#tldr">TL;DR</a>
+    <a href="#story">The story</a>
+    <a href="#flow">Data flow</a>
+    <a href="#milestones">Milestones</a>
+    <a href="#epics">9 epics</a>
+    <a href="#status">Status model</a>
+    <a href="#aliases">Alias state machine</a>
+    <a href="#mockups">Mockups</a>
+    <a href="#api">API contracts</a>
+    <a href="#rbac">RBAC</a>
+    <a href="#decisions">Open decisions</a>
+    <a href="#migration">Cutover</a>
+    <a href="#glossary">Glossary</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- ============================================================ -->
+<section class="section" id="tldr-section">
+  <span class="section-anchor" id="tldr"></span>
+  <div class="wrap">
+    <h2>TL;DR — what we are building, in plain English</h2>
+    <p class="section-lede">
+      The four sentences below are the entire program. Everything else in this plan exists to make these four
+      sentences true reliably and at scale.
+    </p>
+
+    <div class="grid cols-2">
+      <div class="card">
+        <h3><span class="pill accent dot">Pillar F1</span> One vocabulary, two surfaces</h3>
+        <p>PTApp and the API emit the <strong>same status word</strong> for the same real-world condition.
+          "Stale" is not "failed". "Not found" is not "we never looked".</p>
+      </div>
+      <div class="card">
+        <h3><span class="pill accent dot">Pillar F2</span> Aliases that triangulate</h3>
+        <p>Name variants are <strong>internal hints</strong> until the NPI + license + board agree.
+          Then they get promoted to <em>confirmed</em> and help everyone's next lookup.</p>
+      </div>
+      <div class="card">
+        <h3><span class="pill accent dot">Pillar F3</span> Onboarding ≠ monitoring</h3>
+        <p>Pre-go-live file pass is a different journey from live monitoring.
+          Row-level results, no silent drops, reruns supported. Live conflicts show <em>submitted vs primary source</em>,
+          not "fix our profile".</p>
+      </div>
+      <div class="card">
+        <h3><span class="pill accent dot">Pillar F4</span> Internal audit, not customer audit</h3>
+        <p>PT staff get a "what changed?" timeline behind RBAC. A full client-facing audit log is
+          <strong>explicitly out of scope</strong> for 3.0.</p>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:18px;">
+      <strong>Hard non-scope reminders.</strong>
+      Monitor API 2.0 is <em>not</em> a 3.0 gate. There is no client-facing delist API/UI in 3.0.
+      No client-facing full audit. No free-form field pickers that break packaging. PTNetwork-derived
+      demographic mismatch UX stays out.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="section" id="story-section">
+  <span class="section-anchor" id="story"></span>
+  <div class="wrap">
+    <h2>The story (one page)</h2>
+    <p class="section-lede">
+      DNPI 3.0 is not a single epic — it's a program. The art is shipping the foundation (statuses,
+      origin, RBAC, flags) before anyone leans on it; then shipping the client-visible value
+      (file pass, aliases, conflicts, monitoring); then deciding lifecycle packaging once Product locks
+      "how does a caller ask for initial vs ongoing vs re-cred".
+    </p>
+
+    <div class="grid cols-3">
+      <div class="card">
+        <span class="pill info dot">Now → 0–4 weeks</span>
+        <h3 style="margin-top:6px;">Phase 0 — Decisions</h3>
+        <p>Close MVP boundary, lifecycle request shape, alias reuse policy, file ingest persistence,
+          provenance shifts, status mapping, cutover strategy, and the internal role model. Each has a DRI.</p>
+      </div>
+      <div class="card">
+        <span class="pill accent dot">M1 — Foundation</span>
+        <h3 style="margin-top:6px;">Trustworthy internals</h3>
+        <p>Canonical statuses, origin attribution, ~5 VAP→Monitor fields forwarded, feature flags,
+          PT-admin audit prototype, RBAC intent, and the legacy-to-new status mapping table.</p>
+      </div>
+      <div class="card">
+        <span class="pill good dot">M2 — Core MVP</span>
+        <h3 style="margin-top:6px;">Client-visible value</h3>
+        <p>Onboarding file pass; alias triangulation; conflict UX; monitoring alerts that respect urgency
+          and don't auto-dismiss human work; deactivated/manual/fee statuses; production verification only.</p>
+      </div>
+    </div>
+
+    <div class="grid cols-3" style="margin-top:14px;">
+      <div class="card">
+        <span class="pill warn dot">M3 — Conditional</span>
+        <h3 style="margin-top:6px;">Lifecycle packaging</h3>
+        <p>Initial / ongoing / re-cred packages with stable return shapes — <em>only</em> after Decision 2 closes.
+          Otherwise, M3 stays draft and Epic 6 may become its own ERD.</p>
+      </div>
+      <div class="card">
+        <span class="pill neutral dot">Cross-cutting</span>
+        <h3 style="margin-top:6px;">RBAC + flags + audit</h3>
+        <p>RBAC intent in M1, enforcement woven through Epics 1–9. Pilot cohort flags isolate blast radius.
+          Audit prototype thin in M1, hardened in M2.</p>
+      </div>
+      <div class="card">
+        <span class="pill bad dot">Pilot first</span>
+        <h3 style="margin-top:6px;">Cutover</h3>
+        <p>Per-client pilot conversion with a runbook, before/after counts, rollback levers.
+          Org-wide single-UI retirement is an aspiration — not a 3.0 promise.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="section" id="flow-section">
+  <span class="section-anchor" id="flow"></span>
+  <div class="wrap">
+    <h2>Data flow — built vs net-new</h2>
+    <p class="section-lede">
+      Top lane = APIs and UI (what clients see). Bottom lane = automated ingest. Middle = profile and verify.
+      Dark nodes are existing/built. Red nodes are net-new work for 3.0.
+    </p>
+
+    <div class="diagram">
+      <div class="mermaid">
+%%{init: {"theme":"neutral","themeVariables":{"fontSize":"13px"}}}%%
+flowchart BT
+  subgraph delivery [APIs and UI]
+    newUI["New UI<br/>same labels as API<br/>(Theme B, E)"]
+    apiInitial["Initial cred API<br/>(Theme E)"]
+    apiOngoing["Ongoing API<br/>(Theme E)"]
+    apiRecurrent["Re-cred API<br/>(Theme E)"]
+    auditWork["PT-admin audit UI/API<br/>RBAC-gated (Theme H)"]
+  end
+  subgraph profileLane [Profile]
+    aliasWork["Alias work<br/>temp → confirmed → known<br/>(Theme D)"]
+    augmentedRecord["Augmented<br/>provider record"]
+    caqhFeed["CAQH augmentation<br/>(EGEN)"]
+    nscEdu["NSC education and certification<br/>(EGEN)"]
+  end
+  subgraph vapp [V app — monitor and verify]
+    monitorVerify["Monitor and verify<br/>(Theme C)"]
+    originWork["Origin work<br/>reduce admin tasks<br/>(Theme G)"]
+  end
+  autoIngest["Automated data ingest<br/>(EGEN)"]
+  autoIngest --> monitorVerify
+  originWork --> monitorVerify
+  monitorVerify --> augmentedRecord
+  caqhFeed --> augmentedRecord
+  caqhFeed --> nscEdu
+  nscEdu --> augmentedRecord
+  aliasWork --> augmentedRecord
+  augmentedRecord --> apiInitial
+  augmentedRecord --> apiOngoing
+  augmentedRecord --> apiRecurrent
+  apiInitial --> newUI
+  apiOngoing --> newUI
+  apiRecurrent --> newUI
+  auditWork --> newUI
+  classDef workTodo fill:#fde6e3,stroke:#c0322b,color:#5b1410,stroke-width:2px;
+  classDef built fill:#222b46,stroke:#0e1430,color:#ffffff,stroke-width:2px;
+  class originWork,aliasWork,auditWork,apiInitial,apiOngoing,apiRecurrent,newUI workTodo;
+  class autoIngest,monitorVerify,augmentedRecord,caqhFeed,nscEdu built;
+      </div>
+    </div>
+
+    <div class="grid cols-2" style="margin-top:14px;">
+      <div class="card">
+        <h3>What stays, what moves</h3>
+        <p><strong>Built / stays:</strong> automated ingest (EGEN), V-app monitor &amp; verify, augmented provider record,
+          CAQH and NSC enrichment.</p>
+        <p><strong>Net-new for 3.0:</strong> origin attribution work, alias triangulation, lifecycle-aware APIs
+          (initial / ongoing / re-cred), the new UI, and the internal audit surface.</p>
+      </div>
+      <div class="card">
+        <h3>The bridge nobody likes (and we are doing anyway)</h3>
+        <p>Until Monitor is rebuilt, ~5 targeted VAP fields are <strong>forwarded</strong> into Monitor so client-visible
+          paths stay coherent.</p>
+        <p class="muted">Engineering has questioned the shoehorn-only path; treat the field count as
+          a planning shorthand pending Will's revised estimate.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="section" id="milestones-section">
+  <span class="section-anchor" id="milestones"></span>
+  <div class="wrap">
+    <h2>Milestones &amp; sequencing</h2>
+    <p class="section-lede">Three milestones, sized to keep the MVP truthful and to keep lifecycle packaging
+      from quietly absorbing the program.</p>
+
+    <div class="card">
+      <div class="ms-bar"><div class="ms-label">M1</div><div class="ms-track"><div class="ms-fill m1">M1 · Foundation &amp; internal validation</div></div></div>
+      <div class="ms-bar"><div class="ms-label">M2</div><div class="ms-track"><div class="ms-fill m2">M2 · Core verification MVP (client-visible value)</div></div></div>
+      <div class="ms-bar"><div class="ms-label">M3</div><div class="ms-track"><div class="ms-fill m3">M3 · Lifecycle packaging (conditional on Decision 2)</div></div></div>
+    </div>
+
+    <div class="grid cols-3" style="margin-top:14px;">
+      <div class="card">
+        <span class="pill accent">M1 exit</span>
+        <h3 style="margin-top:6px;">Trustworthy internals</h3>
+        <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
+          <li>≥ 20 golden fixtures: API and PTApp emit the <strong>same</strong> status</li>
+          <li>Pilot flag isolated for ≥ 1 tenant; non-pilot tenants unchanged</li>
+          <li>PT-admin can read a "what changed?" timeline for instrumented events</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="pill good">M2 exit</span>
+        <h3 style="margin-top:6px;">Client-visible value</h3>
+        <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
+          <li>Pilot clients receive deterministic row-level onboarding outcomes</li>
+          <li>False "not found" measurably reduced where license + board align</li>
+          <li>No client-facing wording suggesting "fix PT's profile"</li>
+          <li>Temporary aliases <strong>never</strong> visible to clients</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="pill warn">M3 exit (gated)</span>
+        <h3 style="margin-top:6px;">Lifecycle packaging</h3>
+        <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
+          <li>Buy → implement → consume narrative agreed across PM/Eng/Commercial/CS</li>
+          <li>Net-new clients route into packages without bespoke engineering</li>
+          <li>Existing clients have a documented conversion playbook</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="diagram" style="margin-top:14px;">
+      <div class="mermaid">
+%%{init: {"theme":"neutral","themeVariables":{"fontSize":"13px"}}}%%
+flowchart LR
+  m1[M1 · Foundation] --> m2[M2 · Core MVP]
+  m2 --> m3[M3 · Lifecycle &#40;conditional&#41;]
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="section" id="epics-section">
+  <span class="section-anchor" id="epics"></span>
+  <div class="wrap">
+    <h2>Nine epics &amp; their dependency graph</h2>
+    <p class="section-lede">Epics 1 and 8 are the foundation: status vocabulary and RBAC. Everything else
+      hangs off them. Epic 6 (lifecycle) is gated on Decision 2.</p>
+
+    <div class="diagram">
+      <div class="mermaid">
+%%{init: {"theme":"neutral","themeVariables":{"fontSize":"13px"}}}%%
+flowchart LR
+  e1["Epic 1<br/>Status &amp; origin"] --> e3["Epic 3<br/>Aliases"]
+  e1 --> e4["Epic 4<br/>Conflict UX"]
+  e1 --> e5["Epic 5<br/>Monitoring &amp; alerts"]
+  e8["Epic 8<br/>RBAC &amp; flags"] --> e2["Epic 2<br/>Onboarding file pass"]
+  e8 --> e7["Epic 7<br/>Internal audit"]
+  e8 --> e9["Epic 9<br/>Migration &amp; cutover"]
+  e3 --> e4
+  e2 --> e9
+  e4 --> e6["Epic 6<br/>Lifecycle packages<br/>(gated)"]
+  e5 --> e6
+  classDef gate fill:#fff3df,stroke:#b8730d,color:#5b3b06;
+  class e6 gate
+      </div>
+    </div>
+
+    <div class="grid cols-2" style="margin-top:14px;">
+      <div class="card epic must"><div class="num">1</div><div class="body">
+        <h4>Status, origin &amp; API/UI parity <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
+        <p>Same status words in PTApp and API. Each fact carries an origin label.
+          "Stale" ≠ failure. "Not found" ≠ "we never checked".</p>
+      </div></div>
+      <div class="card epic must"><div class="num">2</div><div class="body">
+        <h4>Pre-go-live onboarding file pass <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
+        <p>Every row gets an answer. Partial failure returns the client's fields and flags for review.
+          Reruns supported without operational duplication.</p>
+      </div></div>
+      <div class="card epic must"><div class="num">3</div><div class="body">
+        <h4>Profile alias triangulation <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
+        <p>NPI + license + board coherence promotes a name variant from <em>temporary</em> to <em>confirmed</em>
+          to <em>known</em>. Temporary stays internal.</p>
+      </div></div>
+      <div class="card epic must"><div class="num">4</div><div class="body">
+        <h4>Conflict UX &amp; reconciliation <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
+        <p>Submitted vs primary source side-by-side. Accept/reject where required. Alerts when rules say so.
+          Different messaging for zero credentials vs incomplete NPPES-only.</p>
+      </div></div>
+      <div class="card epic serious"><div class="num">5</div><div class="body">
+        <h4>Monitoring &amp; alerts <span class="pill warn" style="margin-left:6px;">Serious for launch</span></h4>
+        <p>Federal-style hits surface as urgent. Human-needed work doesn't auto-dismiss on a timer.
+          Deactivated, termed, delisted, and brand-new NPIs handled honestly.</p>
+      </div></div>
+      <div class="card epic gated"><div class="num">6</div><div class="body">
+        <h4>Lifecycle packages <span class="pill neutral" style="margin-left:6px;">Gated on Decision 2</span></h4>
+        <p>Named packages (initial / ongoing / re-cred) with stable return shapes. PT configures, client doesn't
+          self-filter. Additive fields are universal per object.</p>
+      </div></div>
+      <div class="card epic must"><div class="num">7</div><div class="body">
+        <h4>PT-admin internal audit <span class="pill bad" style="margin-left:6px;">Must-have (internal)</span></h4>
+        <p>RBAC-gated timeline of alias transitions, license verifications/removals, primary-source mismatches,
+          demographic shifts, lifecycle transitions, manual overrides.</p>
+      </div></div>
+      <div class="card epic must"><div class="num">8</div><div class="body">
+        <h4>RBAC &amp; feature flags <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
+        <p>Read-only blocks upload/accept/reject with clear messages. PT-Only tags <strong>deny</strong>
+          for Global-Client roles. Per-client / cohort flags for safe rollout.</p>
+      </div></div>
+      <div class="card epic"><div class="num">9</div><div class="body">
+        <h4>Migration &amp; cutover <span class="pill warn" style="margin-left:6px;">Pilot first</span></h4>
+        <p>Per-client conversion with before/after counts, alert volume monitoring, rollback,
+          and runbooks for deactivated / fee / type-mismatch edge cases.</p>
+      </div></div>
+    </div>
+
+    <p class="muted" style="margin-top:8px;">
+      Sources: <code>markdown/ERD/epics-dnpi-3.0.md</code> and child <code>markdown/ERD/epics/epic-0N-*.md</code>.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="section" id="status-section">
+  <span class="section-anchor" id="status"></span>
+  <div class="wrap">
+    <h2>Status model — one vocabulary, two surfaces</h2>
+    <p class="section-lede">
+      The single hardest thing in 3.0 is making sure PTApp and the API say the <strong>same word</strong>
+      for the same condition. Below is the canonical vocabulary and a mapping note for engineering.
+    </p>
+
+    <div class="grid cols-2">
+      <div>
+        <table class="tbl">
+          <thead><tr><th>Status</th><th>Meaning</th><th>Surfaces</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill good dot">Verified</span></td><td>Approved check completed and passed</td><td>PTApp + API</td></tr>
+            <tr><td><span class="pill bad dot">Not verified</span></td><td>No approved check, or check failed</td><td>PTApp + API + short reason</td></tr>
+            <tr><td><span class="pill info dot">In progress / Pending</span></td><td>Check in flight within SLA</td><td>PTApp + API</td></tr>
+            <tr><td><span class="pill warn dot">Conflict</span></td><td>Sources disagree; client must resolve</td><td>PTApp + API + accept/reject</td></tr>
+            <tr><td><span class="pill warn dot">Manual / Fee required</span></td><td>Paid or manual jurisdiction step</td><td>PTApp + API + fee context if applicable</td></tr>
+            <tr><td><span class="pill neutral dot">Not found</span></td><td>Looked; nothing matched — <em>not</em> "did not look"</td><td>PTApp + API</td></tr>
+            <tr><td><span class="pill neutral dot">On file (unverified)</span></td><td>Data present without approved path</td><td>PTApp + API; never implies verified</td></tr>
+            <tr><td><span class="pill neutral dot">Stale</span></td><td>Old timestamp, no hard failure</td><td>PTApp + API; neutral cue</td></tr>
+            <tr><td><span class="pill neutral dot">Deactivated</span></td><td>NPI deactivated federally</td><td>PTApp + API; monitoring stops</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Engineering note: a translator, not a rewrite</h3>
+        <p>Don't try to repaint every legacy state at once. Stand up a <em>status mapping layer</em> at the
+          serialization boundary that converts internal Monitor/VAP states into the canonical vocabulary.
+          Keep the legacy column in storage; only the wire shape changes.</p>
+
+        <pre class="code"><span class="c">// Pseudocode — status translator at the API/UI boundary</span>
+<span class="k">enum</span> <span class="n">DnpiStatus</span> {
+  VERIFIED, NOT_VERIFIED, IN_PROGRESS,
+  CONFLICT, MANUAL_FEE_REQUIRED,
+  NOT_FOUND, ON_FILE_UNVERIFIED, STALE, DEACTIVATED
+}
+
+<span class="k">function</span> <span class="p">toDnpi</span>(internal): <span class="n">DnpiStatus</span> {
+  <span class="k">switch</span> (internal.legacyState) {
+    <span class="k">case</span> <span class="s">'AUTO_VERIFIED'</span>:        <span class="k">return</span> VERIFIED;
+    <span class="k">case</span> <span class="s">'STALE_NO_FAILURE'</span>:      <span class="k">return</span> STALE;
+    <span class="k">case</span> <span class="s">'NPPES_DEACTIVATED'</span>:     <span class="k">return</span> DEACTIVATED;
+    <span class="k">case</span> <span class="s">'NO_MATCH_AFTER_LOOKUP'</span>: <span class="k">return</span> NOT_FOUND;
+    <span class="k">case</span> <span class="s">'CHECK_NEVER_RAN'</span>:
+      <span class="c">// CRITICAL: never collapse this into NOT_FOUND</span>
+      <span class="k">return</span> IN_PROGRESS;
+    <span class="k">case</span> <span class="s">'SOURCES_DIVERGE'</span>:       <span class="k">return</span> CONFLICT;
+    <span class="k">case</span> <span class="s">'FEE_REQUIRED'</span>:          <span class="k">return</span> MANUAL_FEE_REQUIRED;
+    <span class="k">default</span>:
+      <span class="c">// fail-loud: surface a structured warning to ops</span>
+      ops.warn(<span class="s">'unmapped_legacy_state'</span>, internal);
+      <span class="k">return</span> ON_FILE_UNVERIFIED;
+  }
+}</pre>
+      </div>
+    </div>
+
+    <div class="callout warn" style="margin-top:14px;">
+      <strong>Decision 6 still open.</strong> The mapping table from current internal states → canonical DNPI
+      vocabulary is an artifact engineering owes Product before M1 exit. Until then, the <code>default</code> branch
+      above must <em>fail loud</em> in observability rather than silently collapse to a benign label.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="section" id="aliases-section">
+  <span class="section-anchor" id="aliases"></span>
+  <div class="wrap">
+    <h2>Alias state machine (Epic 3)</h2>
+    <p class="section-lede">
+      A name variant a client or CAQH supplied <strong>does not</strong> appear as if the client typed it
+      until the system can corroborate it against a primary source. The state machine below is the contract.
+    </p>
+
+    <div class="grid cols-2">
+      <div class="diagram">
+        <div class="mermaid">
+%%{init: {"theme":"neutral","themeVariables":{"fontSize":"13px"}}}%%
+stateDiagram-v2
+  direction LR
+  [*] --> TemporaryHeld: client/CAQH<br/>variant captured
+  TemporaryHeld --> Confirmed: NPI + license + board<br/>coherence proven
+  TemporaryHeld --> RejectedInternal: contradicted by<br/>primary source
+  Confirmed --> Known: persisted on<br/>profile (cross-lookup)
+  Known --> [*]
+  RejectedInternal --> [*]
+  note right of TemporaryHeld
+    Internal-only.
+    NEVER visible to clients.
+  end note
+  note right of Confirmed
+    Persistent.
+    May appear under PT profile/center
+    (NOT in &quot;client data&quot; column).
+  end note
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Promotion rule (read this carefully)</h3>
+        <p>"The client said it's the same person" is <strong>not enough</strong> by itself.
+          Triangulation requires NPI + name signal + credential coherence supported by a primary source.</p>
+        <pre class="code"><span class="c">// Promotion guard for Temporary → Confirmed</span>
+<span class="k">function</span> <span class="p">canPromote</span>(alias, evidence) {
+  <span class="k">return</span> evidence.npi.matches(alias.npi)
+      &amp;&amp; evidence.licenseNumber.matchesBoard(alias.licenseNumber)
+      &amp;&amp; evidence.licenseType.matchesBoardTaxonomy(alias.licenseType)
+      &amp;&amp; nameSignal.coherent(alias.name, evidence.boardName, {
+           middle: <span class="s">'rules'</span>,            <span class="c">// per dnpi_credentials.md</span>
+           lastSubstring: <span class="k">true</span>,        <span class="c">// at-add only</span>
+         })
+      &amp;&amp; <span class="p">!</span>clientAttestationOnly(evidence);  <span class="c">// hard NO</span>
+}</pre>
+
+        <div class="callout">
+          Promotion <em>into</em> the proprietary profile store (PPS) and reuse <em>across</em> clients is
+          <strong>Decision 3 — still open</strong>. Until that closes, treat promoted aliases as scoped to the
+          originating client and flag them for compliance review before any cross-tenant reuse.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="section" id="mockups-section">
+  <span class="section-anchor" id="mockups"></span>
+  <div class="wrap">
+    <h2>Mockups — the three primary use cases</h2>
+    <p class="section-lede">
+      These are conceptual mockups, not pixel-final. They show the <em>information architecture</em> the
+      backend needs to support: client-supplied vs PT profile vs primary source, with origin labels and
+      a single status vocabulary.
+    </p>
+
+    <!-- Use case 1: Onboarding file pass result -->
+    <h3 style="margin: 18px 0 6px;">Use Case 1 — Implementation user runs the pre-go-live file pass</h3>
+    <div class="mock">
+      <div class="titlebar"><span class="dots"><span></span><span></span><span></span></span><span class="url">ptapp.providertrust.com / implementation / onboarding-runs / run_8b1f3</span></div>
+      <div class="body">
+        <div style="display:flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
+          <div>
+            <h4 style="margin:0;">Onboarding run · <span class="mono">run_8b1f3</span></h4>
+            <p class="muted" style="margin:2px 0 0;">Acme Health Pre-Go-Live · roster_2026_05_08.csv · 4 rows</p>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <span class="pill good dot">2 verified</span>
+            <span class="pill warn dot">1 needs review</span>
+            <span class="pill bad dot">1 partial failure</span>
+          </div>
+        </div>
+
+        <table class="tbl filerun">
+          <thead><tr>
+            <th>Row</th><th>Submitted name</th><th>Submitted NPI</th><th>Result vs profile</th><th>Result vs primary</th><th>Status</th><th>Action</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Jane A. Doe</td>
+              <td class="mono">1234567890</td>
+              <td><span class="pill good">match</span></td>
+              <td><span class="pill good">verified</span></td>
+              <td><span class="pill good dot">Verified</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Janie Doe</td>
+              <td class="mono">1234567890</td>
+              <td><span class="pill info">alias candidate (internal)</span></td>
+              <td><span class="pill good">board confirms</span></td>
+              <td><span class="pill good dot">Verified</span></td>
+              <td>auto-promote alias to confirmed</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>John Q Smith</td>
+              <td class="mono">9988776655</td>
+              <td><span class="pill warn">profile says different last name</span></td>
+              <td><span class="pill warn">conflict</span></td>
+              <td><span class="pill warn dot">Conflict</span></td>
+              <td>queue for review · client retains submitted fields</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>—</td>
+              <td class="mono">5555555555</td>
+              <td><span class="pill bad">primary-source fetch timed out</span></td>
+              <td><span class="pill bad">unable to verify</span></td>
+              <td><span class="pill warn dot">Manual / Fee required</span></td>
+              <td>row preserved · flagged for re-run · <strong>not dropped</strong></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout good" style="margin-top:12px;">
+          <strong>Acceptance shape.</strong> Even when the system can't finish a row, the original client
+          fields are returned and the row is flagged. Reruns of a corrected file do not double-count completed
+          work — the run is keyed by <code>(client_id, population_id, file_hash)</code>.
+        </div>
+      </div>
+    </div>
+
+    <!-- Use case 2: Conflict UX -->
+    <h3 style="margin: 22px 0 6px;">Use Case 2 — Client views a live monitoring conflict</h3>
+    <div class="mock">
+      <div class="titlebar"><span class="dots"><span></span><span></span><span></span></span><span class="url">ptapp.providertrust.com / providers / 1234567890 / credentials / lic-tn-12345</span></div>
+      <div class="body">
+        <div class="pv-card">
+          <div class="pv-head">
+            <h4>Jane A. Doe — TN RN License #RN-12345</h4>
+            <span class="npi">NPI <span class="mono">1234567890</span> · checked 2026-05-07 14:21 UTC</span>
+          </div>
+          <div class="pv-grid">
+            <div class="pv-col">
+              <div class="lbl">What you submitted (client)</div>
+              <div class="val">Jane Doe — RN-12345</div>
+              <div class="sub">Submitted 2026-04-12</div>
+            </div>
+            <div class="pv-col center">
+              <div class="lbl">ProviderTrust profile <span class="pill info" style="margin-left:6px;">aliases: 2 confirmed</span></div>
+              <div class="val">Jane A. Doe (primary)</div>
+              <div class="sub">Aliases known: <em>Janie Doe</em>, <em>J. A. Doe</em></div>
+            </div>
+            <div class="pv-col">
+              <div class="lbl">Primary source (TN board)</div>
+              <div class="val">Jane Anne Doe — RN-12345</div>
+              <div class="sub">Board status: <strong>SUSPENDED</strong> · effective 2026-05-01</div>
+            </div>
+          </div>
+
+          <div class="pv-row">
+            <div class="label">Status</div>
+            <div class="v"><span class="pill bad dot">Conflict</span> <span class="muted" style="margin-left:6px;">License board reports SUSPENDED while submitted record showed ACTIVE</span></div>
+          </div>
+          <div class="pv-row">
+            <div class="label">Reason</div>
+            <div class="v">Primary source disagrees with submitted state — compliance-urgent</div>
+          </div>
+          <div class="pv-row">
+            <div class="label">Action</div>
+            <div class="v">
+              <button style="padding:6px 10px; background: var(--accent); color:#fff; border:0; border-radius:6px; font-size:12.5px;">Acknowledge</button>
+              <button style="padding:6px 10px; background: #fff; color: var(--ink); border:1px solid var(--line-strong); border-radius:6px; font-size:12.5px; margin-left:6px;">Reject &amp; explain</button>
+              <span class="muted" style="margin-left:8px;">An email alert was sent to the compliance contact.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout" style="margin-top:12px;">
+          <strong>Notice the framing.</strong> The screen never says "fix our profile". The center column shows
+          <em>what PT knows</em> (including confirmed aliases) and the right column shows <em>what the board says</em>.
+          The client's own submission is preserved on the left.
+        </div>
+      </div>
+    </div>
+
+    <!-- Use case 3: Internal audit timeline -->
+    <h3 style="margin: 22px 0 6px;">Use Case 3 — PT internal investigator answers "what changed?"</h3>
+    <div class="mock">
+      <div class="titlebar"><span class="dots"><span></span><span></span><span></span></span><span class="url">internal.providertrust.com / dnpi / profiles / prof_27aa / audit</span></div>
+      <div class="body">
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 10px;">
+          <div>
+            <h4 style="margin:0;">Profile <span class="mono">prof_27aa</span> · Jane A. Doe · NPI <span class="mono">1234567890</span></h4>
+            <p class="muted" style="margin:2px 0 0;">Internal-only timeline · RBAC: <span class="pill neutral">PT_ADMIN</span> <span class="pill neutral">DATA_SERVICES</span></p>
+          </div>
+          <div>
+            <input type="search" value="last 30 days · alias OR license" style="padding:6px 10px; border:1px solid var(--line); border-radius:8px; font-size:12.5px; width: 280px;" />
+          </div>
+        </div>
+
+        <div class="timeline">
+          <div class="tl-item warn">
+            <div class="when">2026-05-07 14:21 UTC · monitor.scheduler</div>
+            <div class="what"><strong>License conflict surfaced</strong> — TN RN-12345 board status SUSPENDED, prior verified ACTIVE</div>
+            <div class="who">→ Alert: client_email + ptapp_inapp · Severity: urgent</div>
+          </div>
+          <div class="tl-item good">
+            <div class="when">2026-04-30 09:02 UTC · alias.engine</div>
+            <div class="what"><strong>Alias promoted</strong> — "Janie Doe" : Temporary → Confirmed</div>
+            <div class="who">Triangulation: NPI=1234567890, license RN-12345, board name "Jane Anne Doe" (substring last-name match)</div>
+          </div>
+          <div class="tl-item">
+            <div class="when">2026-04-29 16:44 UTC · vap.bridge</div>
+            <div class="what"><strong>Origin attribution updated</strong> — primary source label switched from PROFILE to BOARD</div>
+            <div class="who">Reason: live re-verify cycle picked up board update</div>
+          </div>
+          <div class="tl-item">
+            <div class="when">2026-04-12 11:00 UTC · onboarding.run_8b1f3</div>
+            <div class="what"><strong>Credential added on file</strong> — TN RN-12345 (client-supplied)</div>
+            <div class="who">Initial origin: CLIENT_SUPPLIED · awaiting first verify</div>
+          </div>
+        </div>
+
+        <div class="callout" style="margin-top:12px;">
+          <strong>Internal only.</strong> This view is gated behind RBAC and is <em>not</em> the foundation of a
+          client-facing audit feed. The client-facing version of "what changed?" is intentionally out of scope for 3.0.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="section" id="api-section">
+  <span class="section-anchor" id="api"></span>
+  <div class="wrap">
+    <h2>API contracts — placeholders for EM refinement</h2>
+    <p class="section-lede">
+      Six conceptual sketches. Paths and verbs are illustrative until engineering applies its naming and
+      versioning conventions. They are intentionally <em>not</em> a JSON-schema commitment yet.
+    </p>
+
+    <table class="tbl">
+      <thead><tr><th>Verb</th><th>Sketch path</th><th>Purpose</th><th>Owning epic</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill accent mono">POST</span></td><td class="mono">/dnpi/onboarding-runs</td><td>Start an onboarding run keyed to client/population/context</td><td>Epic 2</td></tr>
+        <tr><td><span class="pill info mono">GET</span></td><td class="mono">/dnpi/onboarding-runs/{run_id}/results</td><td>Aggregated + row-level outcomes</td><td>Epic 2</td></tr>
+        <tr><td><span class="pill info mono">GET</span></td><td class="mono">/dnpi/providers/{npi}/verification-status</td><td>Consolidated status for surfaced credentials</td><td>Epic 1, 4</td></tr>
+        <tr><td><span class="pill accent mono">POST</span></td><td class="mono">/dnpi/providers/{npi}/conflict-resolutions</td><td>Record explicit client remediation</td><td>Epic 4</td></tr>
+        <tr><td><span class="pill info mono">GET</span></td><td class="mono">/internal/dnpi/profiles/{profile_id}/audit-events</td><td>Admin-only timeline</td><td>Epic 7</td></tr>
+        <tr><td><span class="pill accent mono">POST</span></td><td class="mono">/internal/dnpi/profiles/{profile_id}/aliases/{alias_id}/promote</td><td>Admin-only guarded promotion</td><td>Epic 3, 7</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid cols-2" style="margin-top:14px;">
+      <div class="card">
+        <h3>Sample — verification status response</h3>
+        <pre class="code"><span class="c">// GET /dnpi/providers/1234567890/verification-status</span>
+{
+  <span class="n">"npi"</span>: <span class="s">"1234567890"</span>,
+  <span class="n">"profile_id"</span>: <span class="s">"prof_27aa"</span>,
+  <span class="n">"as_of"</span>: <span class="s">"2026-05-07T14:21:00Z"</span>,
+  <span class="n">"status"</span>: <span class="s">"CONFLICT"</span>,
+  <span class="n">"reason_code"</span>: <span class="s">"BOARD_SUSPENDED_VS_SUBMITTED_ACTIVE"</span>,
+  <span class="n">"required_action"</span>: <span class="s">"client_acknowledge"</span>,
+  <span class="n">"credentials"</span>: [
+    {
+      <span class="n">"id"</span>: <span class="s">"lic-tn-12345"</span>,
+      <span class="n">"type"</span>: <span class="s">"RN"</span>,
+      <span class="n">"jurisdiction"</span>: <span class="s">"TN"</span>,
+      <span class="n">"status"</span>: <span class="s">"CONFLICT"</span>,
+      <span class="n">"submitted"</span>: { <span class="n">"name"</span>: <span class="s">"Jane Doe"</span>,
+                      <span class="n">"license_number"</span>: <span class="s">"RN-12345"</span>,
+                      <span class="n">"origin"</span>: <span class="s">"CLIENT_SUPPLIED"</span> },
+      <span class="n">"profile"</span>: { <span class="n">"name"</span>: <span class="s">"Jane A. Doe"</span>,
+                    <span class="n">"aliases_known"</span>: [<span class="s">"Janie Doe"</span>,<span class="s">"J. A. Doe"</span>],
+                    <span class="n">"origin"</span>: <span class="s">"PT_PROFILE"</span> },
+      <span class="n">"primary_source"</span>: { <span class="n">"name"</span>: <span class="s">"Jane Anne Doe"</span>,
+                           <span class="n">"board_status"</span>: <span class="s">"SUSPENDED"</span>,
+                           <span class="n">"effective"</span>: <span class="s">"2026-05-01"</span>,
+                           <span class="n">"origin"</span>: <span class="s">"PRIMARY_SOURCE_BOARD"</span> },
+      <span class="n">"reason_code"</span>: <span class="s">"BOARD_SUSPENDED_VS_SUBMITTED_ACTIVE"</span>
+    }
+  ],
+  <span class="n">"explainability"</span>: {
+    <span class="n">"freshness_seconds"</span>: 14400,
+    <span class="n">"matched_via"</span>: [<span class="s">"NPI"</span>,<span class="s">"LICENSE_NUMBER"</span>,<span class="s">"BOARD_NAME"</span>]
+  }
+}</pre>
+      </div>
+
+      <div class="card">
+        <h3>Sample — onboarding row outcome</h3>
+        <pre class="code"><span class="c">// GET /dnpi/onboarding-runs/run_8b1f3/results (one row)</span>
+{
+  <span class="n">"row_index"</span>: 4,
+  <span class="n">"submitted"</span>: { <span class="n">"name"</span>: <span class="k">null</span>,
+                  <span class="n">"npi"</span>: <span class="s">"5555555555"</span> },
+  <span class="n">"outcome"</span>: <span class="s">"UNABLE_TO_VERIFY_AUTOMATICALLY"</span>,
+  <span class="n">"status"</span>: <span class="s">"MANUAL_FEE_REQUIRED"</span>,
+  <span class="n">"reason_code"</span>: <span class="s">"PRIMARY_SOURCE_TIMEOUT"</span>,
+  <span class="n">"review_queue"</span>: <span class="s">"impl_review"</span>,
+  <span class="n">"client_fields_preserved"</span>: <span class="k">true</span>,
+  <span class="n">"silent_drop"</span>: <span class="k">false</span>,    <span class="c">// invariant for Epic 2</span>
+  <span class="n">"can_rerun"</span>: <span class="k">true</span>
+}</pre>
+
+        <div class="callout warn" style="margin-top:8px;">
+          <strong>Invariant.</strong> <code>silent_drop</code> must always be <code>false</code> for any row
+          present in a submitted file. Tests in Epic 2 should assert this for every fixture.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="section" id="rbac-section">
+  <span class="section-anchor" id="rbac"></span>
+  <div class="wrap">
+    <h2>RBAC matrix (Epic 8 — read this before any UI work)</h2>
+    <p class="section-lede">
+      The internal role model is <strong>Decision 8 — still open</strong>. The matrix below is the working
+      assumption derived from the requirements and is what code should be designed against until Product
+      finalizes the role names.
+    </p>
+
+    <table class="tbl">
+      <thead><tr>
+        <th>Capability</th>
+        <th>Client Admin</th>
+        <th>Client Read-only</th>
+        <th>Implementation / CS</th>
+        <th>Monitoring Ops / Data Services</th>
+        <th>PT_ADMIN</th>
+        <th>API service account</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td>Upload onboarding file</td>
+          <td><span class="pill good">allow</span></td>
+          <td><span class="pill bad">deny — clear msg</span></td>
+          <td><span class="pill good">allow (on-behalf)</span></td>
+          <td><span class="pill bad">deny</span></td>
+          <td><span class="pill good">allow</span></td>
+          <td><span class="pill good">allow (scoped)</span></td>
+        </tr>
+        <tr>
+          <td>Accept / reject conflict</td>
+          <td><span class="pill good">allow</span></td>
+          <td><span class="pill bad">deny — clear msg</span></td>
+          <td><span class="pill good">allow (on-behalf)</span></td>
+          <td><span class="pill bad">deny</span></td>
+          <td><span class="pill good">allow (audited)</span></td>
+          <td><span class="pill good">allow (scoped)</span></td>
+        </tr>
+        <tr>
+          <td>View internal audit timeline</td>
+          <td><span class="pill bad">deny</span></td>
+          <td><span class="pill bad">deny</span></td>
+          <td><span class="pill warn">limited (own client)</span></td>
+          <td><span class="pill good">allow</span></td>
+          <td><span class="pill good">allow</span></td>
+          <td><span class="pill bad">deny</span></td>
+        </tr>
+        <tr>
+          <td>Promote alias (Temporary → Confirmed)</td>
+          <td><span class="pill bad">deny</span></td>
+          <td><span class="pill bad">deny</span></td>
+          <td><span class="pill bad">deny</span></td>
+          <td><span class="pill warn">propose only</span></td>
+          <td><span class="pill good">allow (audited)</span></td>
+          <td><span class="pill bad">deny</span></td>
+        </tr>
+        <tr>
+          <td>Toggle DNPI feature flag for tenant</td>
+          <td><span class="pill bad">deny</span></td>
+          <td><span class="pill bad">deny</span></td>
+          <td><span class="pill warn">request</span></td>
+          <td><span class="pill bad">deny</span></td>
+          <td><span class="pill good">allow</span></td>
+          <td><span class="pill bad">deny</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="grid cols-2" style="margin-top:14px;">
+      <div class="card">
+        <h3>Permission tag pattern</h3>
+        <pre class="code"><span class="c">// Permission tags map to AccessRoles. PT-Only must DENY for Global-Client roles.</span>
+permissions:
+  - id: <span class="s">"dnpi.onboarding.upload"</span>
+    pt_only: <span class="k">false</span>
+    default_for: [<span class="s">"CLIENT_ADMIN"</span>, <span class="s">"IMPLEMENTATION"</span>]
+  - id: <span class="s">"dnpi.audit.read"</span>
+    pt_only: <span class="k">true</span>     <span class="c">// MUST deny for Global-Client AccessRoles</span>
+    default_for: [<span class="s">"PT_ADMIN"</span>, <span class="s">"DATA_SERVICES"</span>]
+  - id: <span class="s">"dnpi.alias.promote"</span>
+    pt_only: <span class="k">true</span>
+    default_for: [<span class="s">"PT_ADMIN"</span>]
+    requires_audit_event: <span class="k">true</span></pre>
+      </div>
+      <div class="card">
+        <h3>Read-only failure mode</h3>
+        <p>A read-only user attempting an upload or accept/reject must see a <strong>clear, identical message</strong>
+          in PTApp and from the API — same idea as Epic 1's "one vocabulary" rule.</p>
+        <pre class="code"><span class="c">// 403 response shape (PTApp surfaces the same wording)</span>
+{
+  <span class="n">"error"</span>: <span class="s">"FORBIDDEN_ROLE"</span>,
+  <span class="n">"message"</span>: <span class="s">"Your role can view but not modify this. Ask your admin for access."</span>,
+  <span class="n">"required_permission"</span>: <span class="s">"dnpi.onboarding.upload"</span>,
+  <span class="n">"current_role"</span>: <span class="s">"CLIENT_READ_ONLY"</span>
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="section" id="decisions-section">
+  <span class="section-anchor" id="decisions"></span>
+  <div class="wrap">
+    <h2>Phase 0 — open decisions blocking design</h2>
+    <p class="section-lede">
+      These are the calls that must close (or be explicitly deferred with written risk) before Engineering can
+      stop hedging. Each row needs a named DRI at kickoff.
+    </p>
+
+    <table class="tbl">
+      <thead><tr>
+        <th>#</th><th>Decision</th><th>Why it matters</th><th>Status</th><th>Downstream impact if deferred</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td>1</td><td>MVP boundary</td>
+          <td>Stops Monitor rewrite + lifecycle + audit + migration from becoming one release</td>
+          <td><span class="pill warn">Partially closed</span></td>
+          <td>Roadmap fights; oversized releases; unstable estimates for Epics 5, 6, 9</td>
+        </tr>
+        <tr>
+          <td>2</td><td>Lifecycle request shape</td>
+          <td>Blocks API design and any commercial promise on initial / ongoing / re-cred</td>
+          <td><span class="pill bad">Open</span></td>
+          <td>Epic 6 cannot be estimated or sold safely; Milestone 3 stays draft</td>
+        </tr>
+        <tr>
+          <td>3</td><td>Alias promotion + cross-client reuse</td>
+          <td>Determines data model and whether confirmed aliases reuse across tenants</td>
+          <td><span class="pill warn">Partially closed</span></td>
+          <td>Epic 3 dedupe behavior unstable; legal review may block GA</td>
+        </tr>
+        <tr>
+          <td>4</td><td>File ingest persistence &amp; deletion semantics</td>
+          <td>What "gone" means when narrower files follow broader files</td>
+          <td><span class="pill bad">Open</span></td>
+          <td>Wrong monitor targets, false "credential dropped" alerts</td>
+        </tr>
+        <tr>
+          <td>5</td><td>Provenance shift behavior</td>
+          <td>How origin flips (client → DNPI) interact with alerts and idempotency</td>
+          <td><span class="pill bad">Open</span></td>
+          <td>Alert storms, remediation confusion, compliance risk</td>
+        </tr>
+        <tr>
+          <td>6</td><td>Status mapping from current systems</td>
+          <td>The translator table from legacy Monitor/VAP states → DNPI vocabulary</td>
+          <td><span class="pill bad">Open</span></td>
+          <td>Epic 1 cannot finish; PTApp/API parity stays hypothetical</td>
+        </tr>
+        <tr>
+          <td>7</td><td>Cutover strategy</td>
+          <td>Sandbox-first vs net-new; per-client vs broader; coexistence duration</td>
+          <td><span class="pill bad">Open</span></td>
+          <td>Epic 9 tooling and CS load are guesses; rollout risk rises</td>
+        </tr>
+        <tr>
+          <td>8</td><td>Internal role model</td>
+          <td>Final names and intents for Client Admin, read-only, Impl/CS, Ops, PT_ADMIN, API SA</td>
+          <td><span class="pill bad">Open</span></td>
+          <td>Wrong access leaks (internal tools exposed) or blocked pilot users</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn" style="margin-top:12px;">
+      <strong>Engineering prototyping is allowed</strong> against <em>explicit assumptions</em> while these are open,
+      but only if Product signs the temporary guardrails in writing. Otherwise we are designing on sand.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="section" id="migration-section">
+  <span class="section-anchor" id="migration"></span>
+  <div class="wrap">
+    <h2>Migration &amp; cutover (Epic 9) — pilot first</h2>
+    <p class="section-lede">
+      The traditional → DNPI conversion is usually a <strong>per-client</strong> switch, not an org-wide flip.
+      The sequence below is the working playbook.
+    </p>
+
+    <div class="diagram">
+      <div class="mermaid">
+%%{init: {"theme":"neutral","themeVariables":{"fontSize":"13px"}}}%%
+flowchart LR
+  s1["1. Baseline counts<br/>subjects, alerts, statuses"] --> s2["2. Enable DNPI flag<br/>for pilot tenant only"]
+  s2 --> s3["3. Run shadow window<br/>compare alerts vs baseline"]
+  s3 --> s4{"Drift in tolerance?"}
+  s4 -- yes --> s5["4. Switch primary<br/>per-client cutover"]
+  s4 -- no --> s6["Investigate · fix · loop"]
+  s5 --> s7["5. Watch alert volume<br/>+ resolution rates"]
+  s7 --> s8{"Sev-1 risk?"}
+  s8 -- no  --> s9["6. Stand down war room<br/>graduate pilot"]
+  s8 -- yes --> s10["Roll back via flag<br/>(documented rollback)"]
+      </div>
+    </div>
+
+    <div class="grid cols-3" style="margin-top:14px;">
+      <div class="card">
+        <h3>Pre-cutover checklist</h3>
+        <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
+          <li>Baseline subject count + active alert volume</li>
+          <li>Status mapping table reviewed for this tenant's data</li>
+          <li>Alias confirmations spot-checked</li>
+          <li>RBAC posture verified for tenant's actual users</li>
+          <li>Rollback runbook signed by EM + CS</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>During cutover — guardrails</h3>
+        <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
+          <li>Alert delta within ±X% of baseline (tune per pilot)</li>
+          <li>No new "fix our profile" wording on any client surface</li>
+          <li>Provenance shifts produce no duplicate alerts</li>
+          <li>Termed / deactivated subjects excluded from re-cycles</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>If we have to roll back</h3>
+        <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
+          <li>Flip the tenant flag → behavior reverts to legacy paths</li>
+          <li>Capture a postmortem with delta tables + alert diff</li>
+          <li>Update Decision 7 evidence with what we learned</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="section" id="glossary-section">
+  <span class="section-anchor" id="glossary"></span>
+  <div class="wrap">
+    <h2>Glossary &amp; pointers back to source</h2>
+    <p class="section-lede">If you only read one supporting doc per area, read these.</p>
+
+    <table class="tbl">
+      <thead><tr><th>Term / area</th><th>What it means here</th><th>Source file</th></tr></thead>
+      <tbody>
+        <tr><td>Parent ERD</td><td>The 3.0 program-level engineering requirements (milestones, use cases, pillars, API placeholders, non-scope).</td><td class="mono">markdown/requirements-dnpi-3.0-engineering.md</td></tr>
+        <tr><td>Decision log</td><td>Phase 0 governance — eight blocking decisions, status, downstream impact.</td><td class="mono">markdown/ERD/decisions-dnpi-3.0.md</td></tr>
+        <tr><td>Epics index</td><td>Plain-English summary of the nine epics with the dependency graph.</td><td class="mono">markdown/ERD/epics-dnpi-3.0.md</td></tr>
+        <tr><td>Per-epic detail</td><td>One file per epic — what you get, what's not in, where it comes from.</td><td class="mono">markdown/ERD/epics/epic-0N-*.md</td></tr>
+        <tr><td>Theme → epic map</td><td>How Themes A–H land in epics with acceptance signals.</td><td class="mono">markdown/ERD/traceability-dnpi-3.0-themes-to-epics.md</td></tr>
+        <tr><td>Lifecycle placement</td><td>When Epic 6 stays in-program vs splits into its own ERD.</td><td class="mono">markdown/ERD/lifecycle-decision-dnpi-3.0.md</td></tr>
+        <tr><td>Claire's PM breakdown</td><td>The blunt program memo this plan is built from.</td><td class="mono">markdown/ERD/claire-breakdown.md</td></tr>
+        <tr><td>Plain-English requirements</td><td>Themes A–H, decisions made, open questions, statuses table, journey + platform diagrams.</td><td class="mono">markdown/DNPI-3.0-requirements-plain.md</td></tr>
+        <tr><td>Data quality SLAs</td><td>Verification path-by-path SLAs (V-app, NPPES, HCIdea, dataQ, DEA, ABMS, client-supplied).</td><td class="mono">diagrams/dynamic-npi-slas.mmd</td></tr>
+      </tbody>
+    </table>
+
+    <p class="muted" style="margin-top:14px;">
+      This page is intentionally self-contained. It will go stale the moment any of the source files do —
+      treat it as a snapshot of the visual story, not as the canonical spec. The canonical product source remains
+      the Confluence <em>DNPI 3.0 Requirements</em> page in the PRODUCT space.
+    </p>
+  </div>
+</section>
+
+</main>
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'neutral',
+      flowchart: { htmlLabels: true, curve: 'basis' },
+      themeVariables: { fontSize: '13px' }
+    });
+  }
+</script>
+
+</body>
+</html>
