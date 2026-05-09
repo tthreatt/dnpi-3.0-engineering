@@ -33,3 +33,7 @@ GitHub Pages refreshes in about a minute after push.
 
 - `.nojekyll` disables Jekyll so the raw HTML is served.
 - Mermaid diagrams load from `cdn.jsdelivr.net` in the page head.
+
+## GitHub Pages (free plan)
+
+GitHub Pages for **private** repositories requires **GitHub Pro** (or a paid org plan). This repository is **public** so Pages can be hosted on a free personal account.
