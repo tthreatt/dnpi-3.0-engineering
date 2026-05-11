@@ -535,22 +535,41 @@ flowchart BT
     <p class="section-lede">Three milestones, sized to keep the MVP truthful and to keep lifecycle packaging
       from quietly absorbing the program.</p>
 
-    <div class="grid cols-3">
-      <div class="card" style="padding-bottom:0;">
-        <div class="ms-bar"><div class="ms-label">M1</div><div class="ms-track"><div class="ms-fill m1">M1 · Foundation &amp; internal validation</div></div></div>
+    <!-- 
+      Rewriting the milestone timeline to closely match the style and arrangement in the provided screenshot:
+      - Milestone bars should be shorter, colored, and inline with subtle connector lines between each.
+      - Milestone numbers above, bars below, labels under bars, secondary text in smaller/lighter font.
+      - Strive for horizontal, visually tidy, modern appearance as in the screenshot.
+    -->
+    <div class="ms-timeline" style="display:flex;align-items:flex-end;gap:36px;margin:26px 0 16px 0;justify-content:flex-start;">
+      <!-- M1 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="ms-label" style="font-size:15px; font-weight:600; color:#272d38; margin-bottom:8px;">M1</div>
+        <div class="ms-bar" style="width:90px; height:5px; border-radius:7px; background:linear-gradient(90deg, #2355bc 60%, #384478 100%); box-shadow:0 1px 2px #dde6fa, 0 0.5px 0 #d3daf4; margin-bottom:8px;"></div>
+        <div style="font-size:13px; line-height:1.25; color:#151717; font-weight:500; text-align:center;">
+          Foundation &amp;<br>internal validation
+        </div>
       </div>
-      <div class="card" style="padding-bottom:0;">
-        <div class="ms-bar"><div class="ms-label">M2</div><div class="ms-track"><div class="ms-fill m2">M2 · Core verification MVP (client-visible value)</div></div></div>
+      <!-- Connector -->
+      <div style="flex:1; min-width:30px; border-bottom:2px solid #dbe2ee; margin-bottom:21px;"></div>
+      <!-- M2 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="ms-label" style="font-size:15px; font-weight:600; color:#272d38; margin-bottom:8px;">M2</div>
+        <div class="ms-bar" style="width:90px; height:5px; border-radius:7px; background:linear-gradient(90deg, #17a359 60%, #22ba6b 100%); box-shadow:0 1px 2px #d7f6e2, 0 0.5px 0 #b8e9cc; margin-bottom:8px;"></div>
+        <div style="font-size:13px; line-height:1.25; color:#151717; font-weight:500; text-align:center;">
+          Core verification MVP<br>
+          <span style="font-size:12px; color:#22ba6b; font-weight:400;">(client-visible value)</span>
+        </div>
       </div>
-      <div class="card" style="padding-bottom:0;">
-        <div class="ms-bar">
-          <div class="ms-label">M3</div>
-          <div class="ms-track">
-            <div class="ms-fill m3">
-              <span style="white-space:nowrap;">M3 · Lifecycle packaging</span>
-              <span style="font-size:12px; opacity:0.75;"> (gated on Decision&nbsp;2)</span>
-            </div>
-          </div>
+      <!-- Connector -->
+      <div style="flex:1; min-width:30px; border-bottom:2px solid #dbe2ee; margin-bottom:21px;"></div>
+      <!-- M3 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="ms-label" style="font-size:15px; font-weight:600; color:#272d38; margin-bottom:8px;">M3</div>
+        <div class="ms-bar" style="width:90px; height:5px; border-radius:7px; background:linear-gradient(90deg, #8560e3 60%, #a48bff 100%); box-shadow:0 1px 2px #ede6fe, 0 0.5px 0 #dcd1fa; margin-bottom:8px;"></div>
+        <div style="font-size:13px; line-height:1.25; color:#151717; font-weight:500; text-align:center;">
+          Lifecycle packaging<br>
+          <span style="font-size:12px; color:#a48bff; opacity:0.75; font-weight:400;">(gated on Decision&nbsp;2)</span>
         </div>
       </div>
     </div>
