@@ -32,7 +32,7 @@
     --radius: 14px;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; overflow-x: hidden; }
   body {
     font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: var(--ink);
@@ -118,7 +118,7 @@
 
   /* Tables */
   table.tbl { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-  table.tbl th, table.tbl td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 14px; }
+  table.tbl th, table.tbl td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 14px; overflow-wrap: break-word; }
   table.tbl th { background: var(--panel-soft); color: var(--ink-soft); font-weight: 600; font-size: 12.5px; letter-spacing: .02em; text-transform: uppercase; }
   table.tbl tr:last-child td { border-bottom: 0; }
   table.tbl td.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; color: #1a2447; }
@@ -168,8 +168,8 @@
   .mock .titlebar .url { font-family: ui-monospace, monospace; padding: 3px 10px; background: #fff; border: 1px solid var(--line); border-radius: 999px; font-size: 11.5px; color: var(--muted); }
   .mock .body { padding: 16px; }
 
-  .row { display: flex; gap: 14px; }
-  .row > * { flex: 1; }
+  .row { display: flex; gap: 14px; min-width: 0; }
+  .row > * { flex: 1; min-width: 0; }
 
   /* Diagram container */
   .diagram {
@@ -178,7 +178,9 @@
     border-radius: var(--radius);
     padding: 14px;
     overflow: auto;
+    max-width: 100%;
   }
+  .diagram .mermaid svg { max-width: 100%; height: auto !important; }
 
   /* Provider verification mockup */
   .pv-card { border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
@@ -376,6 +378,79 @@
         <p>Per-client pilot conversion with a runbook, before/after counts, rollback levers.
           Org-wide single-UI retirement is an aspiration — not a 3.0 promise.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="section" id="decisions-section">
+  <span class="section-anchor" id="decisions"></span>
+  <div class="wrap">
+    <h2>Phase 0 — open decisions blocking design</h2>
+    <p class="section-lede">
+      These are the calls that must close (or be explicitly deferred with written risk) before Engineering can
+      stop hedging. Each row needs a named DRI at kickoff.
+    </p>
+
+    <table class="tbl">
+      <thead><tr>
+        <th>#</th><th>Decision</th><th>Why it matters</th><th>Status</th><th>Downstream impact if deferred</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td>1</td><td>MVP boundary</td>
+          <td>Stops Monitor rewrite + lifecycle + audit + migration from becoming one release</td>
+          <td><span class="pill warn">Partially closed</span></td>
+          <td>Roadmap fights; oversized releases; unstable estimates for Epics 5, 6, 9</td>
+        </tr>
+        <tr>
+          <td>2</td><td>Lifecycle request shape</td>
+          <td>Blocks API design and any commercial promise on initial / ongoing / re-cred</td>
+          <td><span class="pill bad">Open</span></td>
+          <td>Epic 6 cannot be estimated or sold safely; Milestone 3 stays draft</td>
+        </tr>
+        <tr>
+          <td>3</td><td>Alias promotion + cross-client reuse</td>
+          <td>Determines data model and whether confirmed aliases reuse across tenants</td>
+          <td><span class="pill warn">Partially closed</span></td>
+          <td>Epic 3 dedupe behavior unstable; legal review may block GA</td>
+        </tr>
+        <tr>
+          <td>4</td><td>File ingest persistence &amp; deletion semantics</td>
+          <td>What "gone" means when narrower files follow broader files</td>
+          <td><span class="pill bad">Open</span></td>
+          <td>Wrong monitor targets, false "credential dropped" alerts</td>
+        </tr>
+        <tr>
+          <td>5</td><td>Provenance shift behavior</td>
+          <td>How origin flips (client → DNPI) interact with alerts and idempotency</td>
+          <td><span class="pill bad">Open</span></td>
+          <td>Alert storms, remediation confusion, compliance risk</td>
+        </tr>
+        <tr>
+          <td>6</td><td>Status mapping from current systems</td>
+          <td>The translator table from legacy Monitor/VAP states → DNPI vocabulary</td>
+          <td><span class="pill bad">Open</span></td>
+          <td>Epic 1 cannot finish; PTApp/API parity stays hypothetical</td>
+        </tr>
+        <tr>
+          <td>7</td><td>Cutover strategy</td>
+          <td>Sandbox-first vs net-new; per-client vs broader; coexistence duration</td>
+          <td><span class="pill bad">Open</span></td>
+          <td>Epic 9 tooling and CS load are guesses; rollout risk rises</td>
+        </tr>
+        <tr>
+          <td>8</td><td>Internal role model</td>
+          <td>Final names and intents for Client Admin, read-only, Impl/CS, Ops, PT_ADMIN, API SA</td>
+          <td><span class="pill bad">Open</span></td>
+          <td>Wrong access leaks (internal tools exposed) or blocked pilot users</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn" style="margin-top:12px;">
+      <strong>Engineering prototyping is allowed</strong> against <em>explicit assumptions</em> while these are open,
+      but only if Product signs the temporary guardrails in writing. Otherwise we are designing on sand.
     </div>
   </div>
 </section>
@@ -1086,79 +1161,6 @@ permissions:
 </section>
 
 <!-- ============================================================ -->
-<section class="section" id="decisions-section">
-  <span class="section-anchor" id="decisions"></span>
-  <div class="wrap">
-    <h2>Phase 0 — open decisions blocking design</h2>
-    <p class="section-lede">
-      These are the calls that must close (or be explicitly deferred with written risk) before Engineering can
-      stop hedging. Each row needs a named DRI at kickoff.
-    </p>
-
-    <table class="tbl">
-      <thead><tr>
-        <th>#</th><th>Decision</th><th>Why it matters</th><th>Status</th><th>Downstream impact if deferred</th>
-      </tr></thead>
-      <tbody>
-        <tr>
-          <td>1</td><td>MVP boundary</td>
-          <td>Stops Monitor rewrite + lifecycle + audit + migration from becoming one release</td>
-          <td><span class="pill warn">Partially closed</span></td>
-          <td>Roadmap fights; oversized releases; unstable estimates for Epics 5, 6, 9</td>
-        </tr>
-        <tr>
-          <td>2</td><td>Lifecycle request shape</td>
-          <td>Blocks API design and any commercial promise on initial / ongoing / re-cred</td>
-          <td><span class="pill bad">Open</span></td>
-          <td>Epic 6 cannot be estimated or sold safely; Milestone 3 stays draft</td>
-        </tr>
-        <tr>
-          <td>3</td><td>Alias promotion + cross-client reuse</td>
-          <td>Determines data model and whether confirmed aliases reuse across tenants</td>
-          <td><span class="pill warn">Partially closed</span></td>
-          <td>Epic 3 dedupe behavior unstable; legal review may block GA</td>
-        </tr>
-        <tr>
-          <td>4</td><td>File ingest persistence &amp; deletion semantics</td>
-          <td>What "gone" means when narrower files follow broader files</td>
-          <td><span class="pill bad">Open</span></td>
-          <td>Wrong monitor targets, false "credential dropped" alerts</td>
-        </tr>
-        <tr>
-          <td>5</td><td>Provenance shift behavior</td>
-          <td>How origin flips (client → DNPI) interact with alerts and idempotency</td>
-          <td><span class="pill bad">Open</span></td>
-          <td>Alert storms, remediation confusion, compliance risk</td>
-        </tr>
-        <tr>
-          <td>6</td><td>Status mapping from current systems</td>
-          <td>The translator table from legacy Monitor/VAP states → DNPI vocabulary</td>
-          <td><span class="pill bad">Open</span></td>
-          <td>Epic 1 cannot finish; PTApp/API parity stays hypothetical</td>
-        </tr>
-        <tr>
-          <td>7</td><td>Cutover strategy</td>
-          <td>Sandbox-first vs net-new; per-client vs broader; coexistence duration</td>
-          <td><span class="pill bad">Open</span></td>
-          <td>Epic 9 tooling and CS load are guesses; rollout risk rises</td>
-        </tr>
-        <tr>
-          <td>8</td><td>Internal role model</td>
-          <td>Final names and intents for Client Admin, read-only, Impl/CS, Ops, PT_ADMIN, API SA</td>
-          <td><span class="pill bad">Open</span></td>
-          <td>Wrong access leaks (internal tools exposed) or blocked pilot users</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="callout warn" style="margin-top:12px;">
-      <strong>Engineering prototyping is allowed</strong> against <em>explicit assumptions</em> while these are open,
-      but only if Product signs the temporary guardrails in writing. Otherwise we are designing on sand.
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ -->
 <section class="section" id="migration-section">
   <span class="section-anchor" id="migration"></span>
   <div class="wrap">
@@ -1224,24 +1226,25 @@ flowchart LR
     <p class="section-lede">If you only read one supporting doc per area, read these.</p>
 
     <table class="tbl">
-      <thead><tr><th>Term / area</th><th>What it means here</th><th>Source file</th></tr></thead>
+      <thead><tr><th>Term / area</th><th>What it means here</th><th>Source</th></tr></thead>
       <tbody>
-        <tr><td>Parent ERD</td><td>The 3.0 program-level engineering requirements (milestones, use cases, pillars, API placeholders, non-scope).</td><td class="mono">markdown/requirements-dnpi-3.0-engineering.md</td></tr>
-        <tr><td>Decision log</td><td>Phase 0 governance — eight blocking decisions, status, downstream impact.</td><td class="mono">markdown/ERD/decisions-dnpi-3.0.md</td></tr>
-        <tr><td>Epics index</td><td>Plain-English summary of the nine epics with the dependency graph.</td><td class="mono">markdown/ERD/epics-dnpi-3.0.md</td></tr>
-        <tr><td>Per-epic detail</td><td>One file per epic — what you get, what's not in, where it comes from.</td><td class="mono">markdown/ERD/epics/epic-0N-*.md</td></tr>
-        <tr><td>Theme → epic map</td><td>How Themes A–H land in epics with acceptance signals.</td><td class="mono">markdown/ERD/traceability-dnpi-3.0-themes-to-epics.md</td></tr>
-        <tr><td>Lifecycle placement</td><td>When Epic 6 stays in-program vs splits into its own ERD.</td><td class="mono">markdown/ERD/lifecycle-decision-dnpi-3.0.md</td></tr>
-        <tr><td>Claire's PM breakdown</td><td>The blunt program memo this plan is built from.</td><td class="mono">markdown/ERD/claire-breakdown.md</td></tr>
-        <tr><td>Plain-English requirements</td><td>Themes A–H, decisions made, open questions, statuses table, journey + platform diagrams.</td><td class="mono">markdown/DNPI-3.0-requirements-plain.md</td></tr>
-        <tr><td>Data quality SLAs</td><td>Verification path-by-path SLAs (V-app, NPPES, HCIdea, dataQ, DEA, ABMS, client-supplied).</td><td class="mono">diagrams/dynamic-npi-slas.mmd</td></tr>
+        <tr><td>Documentation index</td><td>Confluence entry point that links DNPI 3.0 wiki pages and how they fit together.</td><td><a href="https://providertrust.atlassian.net/wiki/spaces/PRODUCT/pages/6038945806/DynamicNPI+3.0+Summary+of+Documents" target="_blank" rel="noopener noreferrer">DNPI 3.0 Summary of Documents</a></td></tr>
+        <tr><td>Parent ERD</td><td>The 3.0 program-level engineering requirements (milestones, use cases, pillars, API placeholders, non-scope).</td><td><a href="https://providertrust.atlassian.net/wiki/spaces/PRODUCT/pages/6054412324/DNPI+3.0+Engineering+Requirements+Document+Parent+Program" target="_blank" rel="noopener noreferrer">DNPI 3.0 Engineering Requirements Document (Parent Program)</a></td></tr>
+        <tr><td>Decision log</td><td>Phase 0 governance — eight blocking decisions, status, downstream impact.</td><td><a href="https://claude.ai/project/019de40c-ca10-7443-8fb9-031e9a36f21f" target="_blank" rel="noopener noreferrer">Claude project (decision log)</a></td></tr>
+        <tr><td>Epics index</td><td>Plain-English summary of the nine epics with the dependency graph.</td><td><a href="https://providertrust.atlassian.net/wiki/spaces/PRODUCT/pages/6055755812/DNPI+3.0+Epics+Index" target="_blank" rel="noopener noreferrer">DNPI 3.0 Epics Index</a></td></tr>
+        <tr><td>Per-epic detail</td><td>One file per epic — what you get, what's not in, where it comes from.</td><td><a href="https://claude.ai/project/019de522-9199-7657-99d7-d1a75ae1ff55" target="_blank" rel="noopener noreferrer">Claude project (per-epic detail)</a></td></tr>
+        <tr><td>Theme → epic map</td><td>How Themes A–H land in epics with acceptance signals.</td><td><a href="https://claude.ai/project/019e0a46-5991-77e6-bf24-c9aa0cf0cea7" target="_blank" rel="noopener noreferrer">Claude project (theme → epic map)</a></td></tr>
+        <tr><td>Lifecycle placement</td><td>When Epic 6 stays in-program vs splits into its own ERD.</td><td><a href="https://providertrust.atlassian.net/wiki/spaces/PRODUCT/pages/6038945806/DynamicNPI+3.0+Summary+of+Documents" target="_blank" rel="noopener noreferrer">DNPI 3.0 Summary of Documents (wiki index)</a></td></tr>
+        <tr><td>Claire's PM breakdown</td><td>The blunt program memo this plan is built from.</td><td><a href="https://providertrust.atlassian.net/wiki/spaces/PRODUCT/pages/6038945806/DynamicNPI+3.0+Summary+of+Documents" target="_blank" rel="noopener noreferrer">DNPI 3.0 Summary of Documents (wiki index)</a></td></tr>
+        <tr><td>Plain-English requirements</td><td>Themes A–H, decisions made, open questions, statuses table, journey + platform diagrams.</td><td><a href="https://providertrust.atlassian.net/wiki/spaces/PRODUCT/pages/6040780810/DNPI+3.0+Requirements" target="_blank" rel="noopener noreferrer">DNPI 3.0 Requirements</a></td></tr>
+        <tr><td>Data quality SLAs</td><td>Verification path-by-path SLAs (V-app, NPPES, HCIdea, dataQ, DEA, ABMS, client-supplied).</td><td class="mono"><a href="./diagrams/dynamic-npi-slas.mmd">diagrams/dynamic-npi-slas.mmd</a></td></tr>
       </tbody>
     </table>
 
     <p class="muted" style="margin-top:14px;">
       This page is intentionally self-contained. It will go stale the moment any of the source files do —
       treat it as a snapshot of the visual story, not as the canonical spec. The canonical product source remains
-      the Confluence <em>DNPI 3.0 Requirements</em> page in the PRODUCT space.
+      the Confluence <a href="https://providertrust.atlassian.net/wiki/spaces/PRODUCT/pages/6040780810/DNPI+3.0+Requirements" target="_blank" rel="noopener noreferrer"><em>DNPI 3.0 Requirements</em></a> page in the PRODUCT space.
     </p>
   </div>
 </section>
