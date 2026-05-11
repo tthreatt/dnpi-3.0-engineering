@@ -249,16 +249,18 @@
     <div class="eyebrow">DNPI 3.0 · Visual implementation plan</div>
     <h1>One profile-backed verification story — built in three milestones, nine epics</h1>
     <p class="lede">
-      DNPI 3.0 turns Dynamic NPI from a "find every gap" feature into a profile-backed product:
-      consistent statuses across PTApp and the API, alias triangulation against primary sources,
-      a separate pre-go-live file pass, post-go-live monitoring that doesn't auto-dismiss real work,
-      and an internal audit lens for "what changed?" — shipped behind RBAC and pilot flags.
+      DNPI 3.0 turns Dynamic NPI from a “find every gap” pattern into <strong>profile-backed verification</strong>:
+      each person’s credential story lives on a shared provider profile, so checks can tie a client’s roster to official records
+      in a consistent way. We ship the same plain-English statuses in the web app (PTApp) and the computer-to-computer feed (the API);
+      we promote name variants only when an NPI, license, and board story line up; we keep pre-go-live file onboarding separate from
+      after-go-live monitoring; and we give ProviderTrust staff an internal “what changed?” view behind role-based access control (RBAC)
+      and pilot flags—before we widen to every client.
     </p>
     <div class="meta">
       <span class="chip">Last updated 2026-05-08</span>
-      <span class="chip">Status: parent ERD + 9 epic stubs drafted</span>
-      <span class="chip">Phase 0 decisions still open: 6 of 8</span>
-      <span class="chip">Pilot before broad rollout</span>
+      <span class="chip">Status: parent program ERD drafted; nine epic summaries drafted</span>
+      <span class="chip">Phase 0: six of eight blocking decisions still open</span>
+      <span class="chip">Pilot with a small set of clients before broad rollout</span>
     </div>
   </div>
 </header>
@@ -274,7 +276,7 @@
     <a href="#aliases">Alias state machine</a>
     <a href="#mockups">Mockups</a>
     <a href="#api">API contracts</a>
-    <a href="#rbac">RBAC</a>
+    <a href="#rbac">Access control (RBAC)</a>
     <a href="#decisions">Open decisions</a>
     <a href="#migration">Cutover</a>
     <a href="#glossary">Glossary</a>
@@ -289,39 +291,44 @@
   <div class="wrap">
     <h2>TL;DR — what we are building, in plain English</h2>
     <p class="section-lede">
-      The four sentences below are the entire program. Everything else in this plan exists to make these four
-      sentences true reliably and at scale.
+      The four promises below are the heart of the program. The rest of this plan exists to make these promises hold up reliably
+      when many clients and many credentials use the system every day.
     </p>
 
     <div class="grid cols-2">
       <div class="card">
-        <h3><span class="pill accent dot">Pillar F1</span> One vocabulary, two surfaces</h3>
-        <p>PTApp and the API emit the <strong>same status word</strong> for the same real-world condition.
-          "Stale" is not "failed". "Not found" is not "we never looked".</p>
+        <h3><span class="pill accent dot">Promise 1</span> One vocabulary across two surfaces</h3>
+        <p>The web app (PTApp) and the computer-to-computer feed (the API) use the <strong>same plain-English status</strong> for the same real-world situation.
+          A check that is simply old is labeled “Stale,” not “Failed.” A check that ran and found nothing is labeled “Not found,”
+          which does not mean “we never looked.”</p>
       </div>
       <div class="card">
-        <h3><span class="pill accent dot">Pillar F2</span> Aliases that triangulate</h3>
-        <p>Name variants are <strong>internal hints</strong> until the NPI + license + board agree.
-          Then they get promoted to <em>confirmed</em> and help everyone's next lookup.</p>
+        <h3><span class="pill accent dot">Promise 2</span> Aliases earn their place</h3>
+        <p>Name variants that a client or CAQH supplied stay <strong>internal hints</strong> until the National Provider Identifier (NPI),
+          license, and board records support the same story. Then the variant can move to <em>confirmed</em> and help the next lookup
+          for any client who touches that profile.</p>
       </div>
       <div class="card">
-        <h3><span class="pill accent dot">Pillar F3</span> Onboarding ≠ monitoring</h3>
-        <p>Pre-go-live file pass is a different journey from live monitoring.
-          Row-level results, no silent drops, reruns supported. Live conflicts show <em>submitted vs primary source</em>,
-          not "fix our profile".</p>
+        <h3><span class="pill accent dot">Promise 3</span> Onboarding and monitoring are different journeys</h3>
+        <p>The pre-go-live file pass is not the same product path as live monitoring after go-live. The file pass returns
+          a result for every row, never drops a row quietly, and allows reruns. When something conflicts after go-live,
+          the experience compares <em>what the client submitted</em> to <em>what the primary source shows</em>. It does not ask the
+          client to “fix ProviderTrust’s profile” as the default story.</p>
       </div>
       <div class="card">
-        <h3><span class="pill accent dot">Pillar F4</span> Internal audit, not customer audit</h3>
-        <p>PT staff get a "what changed?" timeline behind RBAC. A full client-facing audit log is
-          <strong>explicitly out of scope</strong> for 3.0.</p>
+        <h3><span class="pill accent dot">Promise 4</span> The audit trail is for PT staff, not customers</h3>
+        <p>ProviderTrust employees who need to investigate get a “what changed?” timeline behind role-based access control (RBAC).
+          A full customer-facing audit log for every field change is <strong>deliberately out of scope</strong> for version 3.0.</p>
       </div>
     </div>
 
     <div class="callout" style="margin-top:18px;">
-      <strong>Hard non-scope reminders.</strong>
-      Monitor API 2.0 is <em>not</em> a 3.0 gate. There is no client-facing delist API/UI in 3.0.
-      No client-facing full audit. No free-form field pickers that break packaging. PTNetwork-derived
-      demographic mismatch UX stays out.
+      <strong>What we are deliberately not building in 3.0.</strong>
+      Shipping Dynamic NPI 3.0 does <em>not</em> require finishing Monitor API 2.0 first—that larger rebuild stays off the critical path for this release.
+      We are not shipping a client-facing “remove this provider from monitoring” API or screen. We are not shipping a full client-facing change history.
+      Clients will not get free-form “pick any field” controls that break our named packages and contracts.
+      We are also leaving out the user experience for demographic mismatches that come only from PTNetwork-style sources (for example NPPES / HCIDEA),
+      as agreed in the requirements doc—client- and CAQH-originated signals stay in scope where the product spec says so.
     </div>
   </div>
 </section>
@@ -332,51 +339,62 @@
   <div class="wrap">
     <h2>The story (one page)</h2>
     <p class="section-lede">
-      DNPI 3.0 is not a single epic — it's a program. The art is shipping the foundation (statuses,
-      origin, RBAC, flags) before anyone leans on it; then shipping the client-visible value
-      (file pass, aliases, conflicts, monitoring); then deciding lifecycle packaging once Product locks
-      "how does a caller ask for initial vs ongoing vs re-cred".
+      Dynamic NPI 3.0 is not one epic—it is a coordinated program. The sequencing matters: first put the foundation
+      in place (shared statuses, clear origin labels, role-based access control (RBAC), feature flags) so teams do not
+      build on shifting ground. Then ship what clients actually see and feel (the pre-go-live file pass, alias matching,
+      conflict handling, honest monitoring alerts). Finally, nail down how named lifecycle packages show up in the public
+      API after Product answers how a caller should ask for <em>initial credentialing</em> versus <em>ongoing monitoring</em>
+      versus <em>re-credentialing</em>.
     </p>
 
     <div class="grid cols-3">
       <div class="card">
-        <span class="pill info dot">Now → 0–4 weeks</span>
+        <span class="pill info dot">Now — roughly zero to four weeks</span>
         <h3 style="margin-top:6px;">Phase 0 — Decisions</h3>
-        <p>Close MVP boundary, lifecycle request shape, alias reuse policy, file ingest persistence,
-          provenance shifts, status mapping, cutover strategy, and the internal role model. Each has a DRI.</p>
+        <p>Finish the open calls on minimum viable product (MVP) scope, how lifecycle requests should look on the wire,
+          alias reuse and cross-client policy, what happens when file uploads change shape, how “origin” shifts when a
+          credential moves from client-supplied to DNPI-led, how today’s internal statuses map to the new vocabulary,
+          cutover strategy, and the internal role model. Each topic has one directly responsible individual (DRI) who drives
+          the answer.</p>
       </div>
       <div class="card">
-        <span class="pill accent dot">M1 — Foundation</span>
+        <span class="pill accent dot">Milestone 1 — Foundation</span>
         <h3 style="margin-top:6px;">Trustworthy internals</h3>
-        <p>Canonical statuses, origin attribution, ~5 VAP→Monitor fields forwarded, feature flags,
-          PT-admin audit prototype, RBAC intent, and the legacy-to-new status mapping table.</p>
+        <p>One canonical status list, clear attribution for where each fact came from, a small bridge of about five fields from
+          the verification application (VAP) into Monitor so production paths stay coherent, pilot feature flags, an early
+          ProviderTrust-admin audit experience, the RBAC design intent, and a mapping table from legacy internal states to the
+          new client-facing words.</p>
       </div>
       <div class="card">
-        <span class="pill good dot">M2 — Core MVP</span>
+        <span class="pill good dot">Milestone 2 — Core minimum viable product</span>
         <h3 style="margin-top:6px;">Client-visible value</h3>
-        <p>Onboarding file pass; alias triangulation; conflict UX; monitoring alerts that respect urgency
-          and don't auto-dismiss human work; deactivated/manual/fee statuses; production verification only.</p>
+        <p>The end-to-end onboarding file pass; alias triangulation; conflict screens and workflows; monitoring alerts that
+          treat seriousness seriously and never time out real human work; honest handling of deactivated credentials, manual
+          steps, and paid-board fees; and verification that runs on production data—staging-only checks cannot be the only
+          place problems surface.</p>
       </div>
     </div>
 
     <div class="grid cols-3" style="margin-top:14px;">
       <div class="card">
-        <span class="pill warn dot">M3 — Conditional</span>
+        <span class="pill warn dot">Milestone 3 — Conditional</span>
         <h3 style="margin-top:6px;">Lifecycle packaging</h3>
-        <p>Initial / ongoing / re-cred packages with stable return shapes — <em>only</em> after Decision 2 closes.
-          Otherwise, M3 stays draft and Epic 6 may become its own ERD.</p>
+        <p>Named packages for initial, ongoing, and re-credentialing moments, each with predictable fields in the response
+          <em>only after</em> Decision 2 (lifecycle request shape) closes. If that decision slips, Milestone 3 stays a draft
+          and Epic 6 on lifecycle may need its own engineering requirements document (ERD).</p>
       </div>
       <div class="card">
         <span class="pill neutral dot">Cross-cutting</span>
-        <h3 style="margin-top:6px;">RBAC + flags + audit</h3>
-        <p>RBAC intent in M1, enforcement woven through Epics 1–9. Pilot cohort flags isolate blast radius.
-          Audit prototype thin in M1, hardened in M2.</p>
+        <h3 style="margin-top:6px;">RBAC, flags, and audit</h3>
+        <p>We set RBAC direction in Milestone 1 and carry enforcement through Epics 1–9. Pilot and cohort feature flags limit
+          how many clients see a change at once. The audit experience is thin in Milestone 1 and stronger in Milestone 2.</p>
       </div>
       <div class="card">
         <span class="pill bad dot">Pilot first</span>
         <h3 style="margin-top:6px;">Cutover</h3>
-        <p>Per-client pilot conversion with a runbook, before/after counts, rollback levers.
-          Org-wide single-UI retirement is an aspiration — not a 3.0 promise.</p>
+        <p>Move one pilot client at a time with a written runbook, before-and-after counts of subjects and alerts, and a clear
+          rollback switch. Retiring the legacy experience for the whole company in a single “big bang” is a long-term hope, not
+          a commitment in the 3.0 plan.</p>
       </div>
     </div>
   </div>
@@ -388,8 +406,9 @@
   <div class="wrap">
     <h2>Phase 0 — open decisions blocking design</h2>
     <p class="section-lede">
-      These are the calls that must close (or be explicitly deferred with written risk) before Engineering can
-      stop hedging. Each row needs a named DRI at kickoff.
+      Engineering needs each of these answers to be closed—or explicitly deferred with the risk written down—before the team
+      can treat the design as stable. At program kickoff, assign one directly responsible individual (DRI) per row to drive the
+      decision and the follow-up documentation.
     </p>
 
     <table class="tbl">
@@ -398,59 +417,60 @@
       </tr></thead>
       <tbody>
         <tr>
-          <td>1</td><td>MVP boundary</td>
-          <td>Stops Monitor rewrite + lifecycle + audit + migration from becoming one release</td>
+          <td>1</td><td>Minimum viable product (MVP) boundary</td>
+          <td>It keeps a Monitor rewrite, lifecycle packaging, audit depth, and migration from collapsing into a single impossible release.</td>
           <td><span class="pill warn">Partially closed</span></td>
-          <td>Roadmap fights; oversized releases; unstable estimates for Epics 5, 6, 9</td>
+          <td>Schedules and scope keep fighting each other; releases grow too large; estimates for Epics 5, 6, and 9 stay unreliable.</td>
         </tr>
         <tr>
           <td>2</td><td>Lifecycle request shape</td>
-          <td>Blocks API design and any commercial promise on initial / ongoing / re-cred</td>
+          <td>Without it, engineers cannot design the public API surface or support any firm commercial wording on initial versus ongoing versus re-credentialing packages.</td>
           <td><span class="pill bad">Open</span></td>
-          <td>Epic 6 cannot be estimated or sold safely; Milestone 3 stays draft</td>
+          <td>Epic 6 cannot be sold or estimated safely, and Milestone 3 stays on paper only.</td>
         </tr>
         <tr>
-          <td>3</td><td>Alias promotion + cross-client reuse</td>
-          <td>Determines data model and whether confirmed aliases reuse across tenants</td>
+          <td>3</td><td>Alias promotion and cross-client reuse</td>
+          <td>It fixes the data model and the policy question of whether a confirmed alias learned from one client may help another tenant.</td>
           <td><span class="pill warn">Partially closed</span></td>
-          <td>Epic 3 dedupe behavior unstable; legal review may block GA</td>
+          <td>Epic 3 deduplication rules wobble, and legal or compliance review may block general availability (GA).</td>
         </tr>
         <tr>
-          <td>4</td><td>File ingest persistence &amp; deletion semantics</td>
-          <td>What "gone" means when narrower files follow broader files</td>
+          <td>4</td><td>File ingest persistence and deletion semantics</td>
+          <td>When a client sends a smaller or narrower file after a larger one, the system must define what still counts as “on the roster” and what counts as gone.</td>
           <td><span class="pill bad">Open</span></td>
-          <td>Wrong monitor targets, false "credential dropped" alerts</td>
+          <td>Operators point monitoring at the wrong subjects, and clients see false “credential dropped” noise.</td>
         </tr>
         <tr>
           <td>5</td><td>Provenance shift behavior</td>
-          <td>How origin flips (client → DNPI) interact with alerts and idempotency</td>
+          <td>When a credential’s origin changes—for example from client-supplied to DNPI-discovered—with similar compliance exposure, alerting and repeatability rules must stay clear.</td>
           <td><span class="pill bad">Open</span></td>
-          <td>Alert storms, remediation confusion, compliance risk</td>
+          <td>Teams get floods of duplicate alerts, unclear remediation steps, and harder compliance interpretation.</td>
         </tr>
         <tr>
           <td>6</td><td>Status mapping from current systems</td>
-          <td>The translator table from legacy Monitor/VAP states → DNPI vocabulary</td>
+          <td>We need a published map from today’s Monitor and VAP internal states to the new Dynamic NPI client vocabulary.</td>
           <td><span class="pill bad">Open</span></td>
-          <td>Epic 1 cannot finish; PTApp/API parity stays hypothetical</td>
+          <td>Epic 1 cannot finish, and “one vocabulary” between the web app and the API remains a theory on a slide.</td>
         </tr>
         <tr>
           <td>7</td><td>Cutover strategy</td>
-          <td>Sandbox-first vs net-new; per-client vs broader; coexistence duration</td>
+          <td>This chooses whether we lean sandbox-first or net-new tenants first, per-client versus broader switches, and how long two experiences may run side by side.</td>
           <td><span class="pill bad">Open</span></td>
-          <td>Epic 9 tooling and CS load are guesses; rollout risk rises</td>
+          <td>Epic 9 tools and Client Success load stay guesswork, and rollout risk goes up.</td>
         </tr>
         <tr>
           <td>8</td><td>Internal role model</td>
-          <td>Final names and intents for Client Admin, read-only, Impl/CS, Ops, PT_ADMIN, API SA</td>
+          <td>Final names and permission intent for client admin, read-only users, implementation and customer success, monitoring operations, ProviderTrust administrator, and API service accounts need alignment.</td>
           <td><span class="pill bad">Open</span></td>
-          <td>Wrong access leaks (internal tools exposed) or blocked pilot users</td>
+          <td>We either expose internal-only tools to the wrong audience or block pilot users who should have access.</td>
         </tr>
       </tbody>
     </table>
 
     <div class="callout warn" style="margin-top:12px;">
-      <strong>Engineering prototyping is allowed</strong> against <em>explicit assumptions</em> while these are open,
-      but only if Product signs the temporary guardrails in writing. Otherwise we are designing on sand.
+      <strong>Prototypes are allowed on written assumptions.</strong> Engineering may build throwaway code against temporary assumptions
+      while a row stays open, but Product must sign those assumptions in writing. Without that handshake, the design rests on
+      guesswork and will not survive the first real client.
     </div>
   </div>
 </section>
@@ -461,8 +481,10 @@
   <div class="wrap">
     <h2>Data flow — built vs net-new</h2>
     <p class="section-lede">
-      Top lane = APIs and UI (what clients see). Bottom lane = automated ingest. Middle = profile and verify.
-      Dark nodes are existing/built. Red nodes are net-new work for 3.0.
+      Read the diagram from top to bottom. The top band is what the client touches: application programming interface (API) endpoints
+      and the new user interface (Theme B and E in the requirements). The bottom band is automated ingest from EGEN-style jobs.
+      The middle band is profile enrichment and the “V app” path that monitors and verifies credentials. Nodes styled in dark blue in the diagram represent
+      components that are already built or largely in place; nodes styled in light red represent net-new engineering for Dynamic NPI 3.0.
     </p>
 
     <div class="diagram">
@@ -510,18 +532,19 @@ flowchart BT
 
     <div class="grid cols-2" style="margin-top:14px;">
       <div class="card">
-        <h3>What stays, what moves</h3>
-        <p><strong>Built / stays:</strong> automated ingest (EGEN), V-app monitor &amp; verify, augmented provider record,
-          CAQH and NSC enrichment.</p>
-        <p><strong>Net-new for 3.0:</strong> origin attribution work, alias triangulation, lifecycle-aware APIs
-          (initial / ongoing / re-cred), the new UI, and the internal audit surface.</p>
+        <h3>What stays in place, what we add</h3>
+        <p><strong>Already built or stays:</strong> automated data ingest (labeled EGEN in the diagram), the verification application’s monitor-and-verify path,
+          the augmented provider record, and feeds from CAQH and NSC that enrich the profile.</p>
+        <p><strong>New for 3.0:</strong> clearer origin attribution, alias resolution before data leaves the profile, lifecycle-aware APIs for
+          initial credentialing, ongoing monitoring, and re-credentialing, the redesigned client experience, and the internal audit experience
+          for ProviderTrust administrators.</p>
       </div>
       <div class="card">
-        <h3>The bridge nobody likes (and we are doing anyway)</h3>
-        <p>Until Monitor is rebuilt, ~5 targeted VAP fields are <strong>forwarded</strong> into Monitor so client-visible
-          paths stay coherent.</p>
-        <p class="muted">Engineering has questioned the shoehorn-only path; treat the field count as
-          a planning shorthand pending Will's revised estimate.</p>
+        <h3>Interim bridge: a handful of VAP fields into Monitor</h3>
+        <p>Until a deeper Monitor API redesign lands, we plan to forward about five carefully chosen fields from the verification application (VAP)
+          into Monitor so that what a person sees in the product matches what automated checks record.</p>
+        <p class="muted">Engineering leadership has questioned a “shoehorn only” long-term path; treat “about five fields” as planning shorthand until
+          the responsible engineering manager publishes a revised estimate and scope.</p>
       </div>
     </div>
   </div>
@@ -532,8 +555,8 @@ flowchart BT
   <span class="section-anchor" id="milestones"></span>
   <div class="wrap">
     <h2>Milestones &amp; sequencing</h2>
-    <p class="section-lede">Three milestones, sized to keep the MVP truthful and to keep lifecycle packaging
-      from quietly absorbing the program.</p>
+    <p class="section-lede">We split the program into three milestones so the minimum viable product (MVP) stays honest—lifecycle packaging cannot quietly
+      swallow every other epic without Product’s explicit decision on request shape (Decision 2).</p>
 
     <!-- 
       Rewriting the milestone timeline to closely match the style and arrangement in the provided screenshot:
@@ -544,20 +567,20 @@ flowchart BT
     <div class="ms-timeline" style="display:flex;align-items:flex-end;gap:36px;margin:26px 0 16px 0;justify-content:flex-start;">
       <!-- M1 -->
       <div style="display:flex;flex-direction:column;align-items:center;">
-        <div class="ms-label" style="font-size:15px; font-weight:600; color:#272d38; margin-bottom:8px;">M1</div>
+        <div class="ms-label" style="font-size:15px; font-weight:600; color:#272d38; margin-bottom:8px;">Milestone 1</div>
         <div class="ms-bar" style="width:90px; height:5px; border-radius:7px; background:linear-gradient(90deg, #2355bc 60%, #384478 100%); box-shadow:0 1px 2px #dde6fa, 0 0.5px 0 #d3daf4; margin-bottom:8px;"></div>
         <div style="font-size:13px; line-height:1.25; color:#151717; font-weight:500; text-align:center;">
-          Foundation &amp;<br>internal validation
+          Foundation &amp; internal validation
         </div>
       </div>
       <!-- Connector -->
       <div style="flex:1; min-width:30px; border-bottom:2px solid #dbe2ee; margin-bottom:21px;"></div>
       <!-- M2 -->
       <div style="display:flex;flex-direction:column;align-items:center;">
-        <div class="ms-label" style="font-size:15px; font-weight:600; color:#272d38; margin-bottom:8px;">M2</div>
+        <div class="ms-label" style="font-size:15px; font-weight:600; color:#272d38; margin-bottom:8px;">Milestone 2</div>
         <div class="ms-bar" style="width:90px; height:5px; border-radius:7px; background:linear-gradient(90deg, #17a359 60%, #22ba6b 100%); box-shadow:0 1px 2px #d7f6e2, 0 0.5px 0 #b8e9cc; margin-bottom:8px;"></div>
         <div style="font-size:13px; line-height:1.25; color:#151717; font-weight:500; text-align:center;">
-          Core verification MVP<br>
+          Core verification minimum viable product<br>
           <span style="font-size:12px; color:#22ba6b; font-weight:400;">(client-visible value)</span>
         </div>
       </div>
@@ -565,42 +588,42 @@ flowchart BT
       <div style="flex:1; min-width:30px; border-bottom:2px solid #dbe2ee; margin-bottom:21px;"></div>
       <!-- M3 -->
       <div style="display:flex;flex-direction:column;align-items:center;">
-        <div class="ms-label" style="font-size:15px; font-weight:600; color:#272d38; margin-bottom:8px;">M3</div>
+        <div class="ms-label" style="font-size:15px; font-weight:600; color:#272d38; margin-bottom:8px;">Milestone 3</div>
         <div class="ms-bar" style="width:90px; height:5px; border-radius:7px; background:linear-gradient(90deg, #8560e3 60%, #a48bff 100%); box-shadow:0 1px 2px #ede6fe, 0 0.5px 0 #dcd1fa; margin-bottom:8px;"></div>
         <div style="font-size:13px; line-height:1.25; color:#151717; font-weight:500; text-align:center;">
           Lifecycle packaging<br>
-          <span style="font-size:12px; color:#a48bff; opacity:0.75; font-weight:400;">(gated on Decision&nbsp;2)</span>
+          <span style="font-size:12px; color:#a48bff; opacity:0.75; font-weight:400;">(waits on Decision&nbsp;2)</span>
         </div>
       </div>
     </div>
 
     <div class="grid cols-3" style="margin-top:14px;">
       <div class="card">
-        <span class="pill accent">M1 exit</span>
+        <span class="pill accent">Milestone 1 exit criteria</span>
         <h3 style="margin-top:6px;">Trustworthy internals</h3>
         <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
-          <li>≥ 20 golden fixtures: API and PTApp emit the <strong>same</strong> status</li>
-          <li>Pilot flag isolated for ≥ 1 tenant; non-pilot tenants unchanged</li>
-          <li>PT-admin can read a "what changed?" timeline for instrumented events</li>
+          <li>At least twenty golden test fixtures show the web app (PTApp) and the computer-to-computer feed (the API) returning the <strong>same</strong> status for the same situation.</li>
+          <li>The Dynamic NPI pilot feature flag applies to at least one tenant while every other tenant behaves exactly as before.</li>
+          <li>A ProviderTrust administrator can open a “what changed?” timeline for the events we instrument in this milestone.</li>
         </ul>
       </div>
       <div class="card">
-        <span class="pill good">M2 exit</span>
+        <span class="pill good">Milestone 2 exit criteria</span>
         <h3 style="margin-top:6px;">Client-visible value</h3>
         <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
-          <li>Pilot clients receive deterministic row-level onboarding outcomes</li>
-          <li>False "not found" measurably reduced where license + board align</li>
-          <li>No client-facing wording suggesting "fix PT's profile"</li>
-          <li>Temporary aliases <strong>never</strong> visible to clients</li>
+          <li>Pilot clients receive deterministic, row-level results from the pre-go-live onboarding file pass.</li>
+          <li>False “not found” outcomes drop measurably when the license and board already agree on the identity, because alias triangulation works.</li>
+          <li>No client-facing copy tells the customer their job is to “fix ProviderTrust’s aggregate profile” by default.</li>
+          <li>Temporary alias hints remain <strong>internal</strong> and never appear as if the client typed them.</li>
         </ul>
       </div>
       <div class="card">
-        <span class="pill warn">M3 exit (gated)</span>
+        <span class="pill warn">Milestone 3 exit criteria (conditional)</span>
         <h3 style="margin-top:6px;">Lifecycle packaging</h3>
         <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
-          <li>Buy → implement → consume narrative agreed across PM/Eng/Commercial/CS</li>
-          <li>Net-new clients route into packages without bespoke engineering</li>
-          <li>Existing clients have a documented conversion playbook</li>
+          <li>Product management, engineering, commercial, and Client Success share the same story for how to buy, implement, and consume named lifecycle packages.</li>
+          <li>New customers can land on standard packages without a one-off engineering project for each deal.</li>
+          <li>Existing customers have a written playbook for converting from their current setup.</li>
         </ul>
       </div>
     </div>
@@ -612,8 +635,9 @@ flowchart BT
   <span class="section-anchor" id="epics"></span>
   <div class="wrap">
     <h2>Nine epics &amp; their dependency graph</h2>
-    <p class="section-lede">Epics 1 and 8 are the foundation: status vocabulary and RBAC. Everything else
-      hangs off them. Epic 6 (lifecycle) is gated on Decision 2.</p>
+    <p class="section-lede">
+      Epics 1 and 8 are the spine: one shared status vocabulary (Epic 1) and role-based access control plus pilot flags (Epic 8).
+      Everything else hangs from those two. Epic 6 on lifecycle packages waits for Decision 2 (lifecycle request shape).</p>
 
     <div class="diagram">
       <div class="mermaid">
@@ -638,52 +662,54 @@ flowchart LR
       <!-- Group 1: 1, 3, 4, 5, 6 -->
       <div>
         <div class="card epic must"><div class="num">1</div><div class="body">
-          <h4>Status, origin &amp; API/UI parity <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
-          <p>Same status words in PTApp and API. Each fact carries an origin label.
-            "Stale" ≠ failure. "Not found" ≠ "we never checked".</p>
+          <h4>One clear status story in the app and the API <span class="pill bad" style="margin-left:6px;">Must-have for launch</span></h4>
+          <p>The web app (PTApp) and the computer-to-computer feed (the API) use the same plain-English words for the same situation,
+            and each fact shows where it came from. “Stale” is not the same as “failed,” and “not found” is not the same as “we never checked.”</p>
         </div></div>
         <div class="card epic must"><div class="num">3</div><div class="body">
-          <h4>Profile alias triangulation <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
-          <p>NPI + license + board coherence promotes a name variant from <em>temporary</em> to <em>confirmed</em>
-            to <em>known</em>. Temporary stays internal.</p>
+          <h4>Names that almost match still connect to the right person <span class="pill bad" style="margin-left:6px;">Must-have for launch</span></h4>
+          <p>When the National Provider Identifier (NPI), license number, and board record line up, a name variant can move from
+            <em>temporary</em> to <em>confirmed</em> to <em>known</em>. Hints stay inside ProviderTrust until they earn that promotion.</p>
         </div></div>
         <div class="card epic must"><div class="num">4</div><div class="body">
-          <h4>Conflict UX &amp; reconciliation <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
-          <p>Submitted vs primary source side-by-side. Accept/reject where required. Alerts when rules say so.
-            Different messaging for zero credentials vs incomplete NPPES-only.</p>
+          <h4>When two sources disagree, the client sees both sides <span class="pill bad" style="margin-left:6px;">Must-have for launch</span></h4>
+          <p>Show what the client submitted next to what the primary source reports. Offer accept or reject flows where the requirements call for them,
+            and raise alerts when policy says so. Use different guidance when the roster has zero credentials versus when only an incomplete federal taxonomy
+            (for example NPPES-only) is available.</p>
         </div></div>
         <div class="card epic serious"><div class="num">5</div><div class="body">
-          <h4>Monitoring &amp; alerts <span class="pill warn" style="margin-left:6px;">Serious for launch</span></h4>
-          <p>Federal-style hits surface as urgent. Human-needed work doesn't auto-dismiss on a timer.
-            Deactivated, termed, delisted, and brand-new NPIs handled honestly.</p>
+          <h4>After go-live: monitoring that tells the truth <span class="pill warn" style="margin-left:6px;">Serious case for launch; extra noise control can follow</span></h4>
+          <p>High-severity items such as federal-style hits surface with appropriate urgency. Alerts that need a human do not disappear because a timer expired.
+            Deactivated National Provider Identifiers, termed subjects, delisted licenses, and brand-new identifiers in mid-cycle all get honest labels.</p>
         </div></div>
         <div class="card epic gated"><div class="num">6</div><div class="body">
-          <h4>Lifecycle packages <span class="pill neutral" style="margin-left:6px;">Gated on Decision 2</span></h4>
-          <p>Named packages (initial / ongoing / re-cred) with stable return shapes. PT configures, client doesn't
-            self-filter. Additive fields are universal per object.</p>
+          <h4>Named packages for initial, ongoing, and re-check moments <span class="pill neutral" style="margin-left:6px;">Waits on Decision 2</span></h4>
+          <p>Sold packages return predictable shapes for initial credentialing, ongoing monitoring, and re-credentialing. ProviderTrust configures what comes back;
+            the client does not get a “pick your own fields” filter that breaks packaging rules. When we add fields to an object, those additions apply to every buyer
+            mapped to that object footprint.</p>
         </div></div>
       </div>
       <!-- Group 2: 2, 7, 8, 9 -->
       <div>
         <div class="card epic must"><div class="num">2</div><div class="body">
-          <h4>Pre-go-live onboarding file pass <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
-          <p>Every row gets an answer. Partial failure returns the client's fields and flags for review.
-            Reruns supported without operational duplication.</p>
+          <h4>Before go-live: a full-file check that keeps every row <span class="pill bad" style="margin-left:6px;">Must-have for launch</span></h4>
+          <p>Every uploaded row receives an explicit outcome. When automation cannot finish, the run still returns the client’s original fields and flags the row for review.
+            Teams can rerun corrected files without duplicating operational work.</p>
         </div></div>
         <div class="card epic must"><div class="num">7</div><div class="body">
-          <h4>PT-admin internal audit <span class="pill bad" style="margin-left:6px;">Must-have (internal)</span></h4>
-          <p>RBAC-gated timeline of alias transitions, license verifications/removals, primary-source mismatches,
-            demographic shifts, lifecycle transitions, manual overrides.</p>
+          <h4>ProviderTrust staff can see what changed on a profile <span class="pill bad" style="margin-left:6px;">Must-have for launch (internal only)</span></h4>
+          <p>Behind role-based access control (RBAC), internal users see a timeline of alias moves, license checks and removals, primary-source mismatches,
+            demographic updates, lifecycle transitions, and manual overrides. This is not a substitute for a full customer audit log in 3.0.</p>
         </div></div>
         <div class="card epic must"><div class="num">8</div><div class="body">
-          <h4>RBAC &amp; feature flags <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
-          <p>Read-only blocks upload/accept/reject with clear messages. PT-Only tags <strong>deny</strong>
-            for Global-Client roles. Per-client / cohort flags for safe rollout.</p>
+          <h4>Right people, right screens; safe pilots <span class="pill bad" style="margin-left:6px;">Must-have for launch</span></h4>
+          <p>Read-only roles cannot upload files or accept conflicts, and they see the same error wording in the app and on the API. Permission tags marked for ProviderTrust-only use
+            must <strong>deny</strong> access for global client roles even when a screen exists. Per-tenant and cohort feature flags keep rollout risk contained.</p>
         </div></div>
         <div class="card epic"><div class="num">9</div><div class="body">
-          <h4>Migration &amp; cutover <span class="pill warn" style="margin-left:6px;">Pilot first</span></h4>
-          <p>Per-client conversion with before/after counts, alert volume monitoring, rollback,
-            and runbooks for deactivated / fee / type-mismatch edge cases.</p>
+          <h4>Pilot move from traditional monitoring to Dynamic NPI <span class="pill warn" style="margin-left:6px;">Pilot first</span></h4>
+          <p>Convert one client at a time with before-and-after subject counts, alert-volume monitoring, documented rollback, and runbooks for deactivated identifiers,
+            fee-based boards, and entity-type mismatches.</p>
         </div></div>
       </div>
     </div>
@@ -702,9 +728,9 @@ flowchart LR
   <div class="wrap">
     <h2>Status model — one vocabulary, two surfaces</h2>
     <p class="section-lede">
-      The single hardest thing in 3.0 is making sure PTApp and the API say the <strong>same word</strong>
-      for the same condition. Below is the canonical vocabulary and a mapping note for engineering.
-    </p>
+      The hardest product promise in 3.0 is simple to say: the web app (PTApp) and the computer-to-computer feed (the API) must use the <strong>same word</strong>
+      for the same real-world condition. The table below lists the canonical client-facing statuses. The card beside it explains how engineering maps today’s internal codes
+      without rewriting every database column overnight.</p>
 
     <div class="grid cols-2">
       <div>
@@ -713,7 +739,7 @@ flowchart LR
           <tbody>
             <tr><td><span class="pill good dot">Verified</span></td><td>Approved check completed and passed</td><td>PTApp + API</td></tr>
             <tr><td><span class="pill bad dot">Not verified</span></td><td>No approved check, or check failed</td><td>PTApp + API + short reason</td></tr>
-            <tr><td><span class="pill info dot">In progress / Pending</span></td><td>Check in flight within SLA</td><td>PTApp + API</td></tr>
+            <tr><td><span class="pill info dot">In progress / Pending</span></td><td>Check in flight inside the agreed service-level agreement (SLA)</td><td>PTApp + API</td></tr>
             <tr><td><span class="pill warn dot">Conflict</span></td><td>Sources disagree; client must resolve</td><td>PTApp + API + accept/reject</td></tr>
             <tr><td><span class="pill warn dot">Manual / Fee required</span></td><td>Paid or manual jurisdiction step</td><td>PTApp + API + fee context if applicable</td></tr>
             <tr><td><span class="pill neutral dot">Not found</span></td><td>Looked; nothing matched — <em>not</em> "did not look"</td><td>PTApp + API</td></tr>
@@ -726,9 +752,10 @@ flowchart LR
 
       <div class="card">
         <h3>Engineering note: a translator, not a rewrite</h3>
-        <p>Don't try to repaint every legacy state at once. Stand up a <em>status mapping layer</em> at the
-          serialization boundary that converts internal Monitor/VAP states into the canonical vocabulary.
-          Keep the legacy column in storage; only the wire shape changes.</p>
+        <p>We do not need to repaint every legacy database value in one release. Instead, stand up a <em>status mapping layer</em>—a translator—at the boundary
+          where data becomes a client response. That layer turns internal Monitor and VAP states into the canonical vocabulary in the table. Keep the legacy codes in storage;
+          only the wire format that PTApp and public integrators see changes.</p>
+        <p style="margin-top:10px;">The sample code below shows how such a translator behaves; the exact switch values will mirror Decision 6 once the mapping artifact lands.</p>
 
         <pre class="code"><span class="c">// Pseudocode — status translator at the API/UI boundary</span>
 <span class="k">enum</span> <span class="n">DnpiStatus</span> {
@@ -758,10 +785,9 @@ flowchart LR
     </div>
 
     <div class="callout warn" style="margin-top:14px;">
-      <strong>Decision 6 still open.</strong> The mapping table from current internal states → canonical DNPI
-      vocabulary is an artifact engineering owes Product before M1 exit. Until then, the <code>default</code> branch
-      above must <em>fail loud</em> in observability rather than silently collapse to a benign label.
-    </div>
+      <strong>Decision 6 is still open.</strong> The spreadsheet or document that maps current internal states to the canonical Dynamic NPI vocabulary is a deliverable
+      engineering owes Product before Milestone 1 closes. Until that file exists, the <code>default</code> branch in the sample above must raise a visible warning for our operations teams
+      whenever an unknown legacy code appears, instead of quietly folding it into a harmless-looking label.</div>
   </div>
 </section>
 
@@ -771,9 +797,8 @@ flowchart LR
   <div class="wrap">
     <h2>Alias state machine (Epic 3)</h2>
     <p class="section-lede">
-      A name variant a client or CAQH supplied <strong>does not</strong> appear as if the client typed it
-      until the system can corroborate it against a primary source. The state machine below is the contract.
-    </p>
+      When a client or CAQH sends a name that does not exactly match federal records, we still treat that variant carefully. It <strong>does not</strong> show up in the “what you typed” column
+      as a confirmed fact until a primary source backs the story. The diagram below is the lifecycle contract: internal hold, promotion with proof, or rejection when the official record disagrees.</p>
 
     <div class="diagram" style="width:100%; margin: 0 auto;">
       <div class="mermaid" style="min-width:500px; font-size:15px;">
@@ -797,8 +822,8 @@ stateDiagram-v2
     <!-- Move card below the mermaid diagram for full-width diagram -->
     <div class="card" style="margin-top:22px;">
       <h3>Promotion rule (read this carefully)</h3>
-      <p>"The client said it's the same person" is <strong>not enough</strong> by itself.
-        Triangulation requires NPI + name signal + credential coherence supported by a primary source.</p>
+      <p>Hearing “the client says it is the same person” is <strong>not sufficient</strong> by itself. Promotion to a shared, long-lived
+        alias requires the National Provider Identifier (NPI), name signals, and credential details to line up with what a board or similar primary source publishes.</p>
       <pre class="code"><span class="c">// Promotion guard for Temporary → Confirmed</span>
 <span class="k">function</span> <span class="p">canPromote</span>(alias, evidence) {
   <span class="k">return</span> evidence.npi.matches(alias.npi)
@@ -812,9 +837,9 @@ stateDiagram-v2
 }</pre>
 
       <div class="callout">
-        Promotion <em>into</em> the proprietary profile store (PPS) and reuse <em>across</em> clients is
-        <strong>Decision 3 — still open</strong>. Until that closes, treat promoted aliases as scoped to the
-        originating client and flag them for compliance review before any cross-tenant reuse.
+        Moving an alias <em>into</em> ProviderTrust’s shared Proprietary Profile Store (PPS) intelligence—and deciding when that intelligence may <em>reuse across clients</em>—is
+        <strong>Decision 3, and it remains open</strong>. Until Product and Compliance close it, treat every promoted alias as owned by the client that supplied the evidence,
+        and run compliance review before any cross-tenant reuse.
       </div>
     </div>
   </div>
@@ -826,10 +851,9 @@ stateDiagram-v2
   <div class="wrap">
     <h2>Mockups — the three primary use cases</h2>
     <p class="section-lede">
-      These are conceptual mockups, not pixel-final. They show the <em>information architecture</em> the
-      backend needs to support: client-supplied vs PT profile vs primary source, with origin labels and
-      a single status vocabulary.
-    </p>
+      These screens are conceptual, not final visual design. They show the <em>information architecture</em> the services must support:
+      what the client submitted, what lives on the ProviderTrust profile, and what the official primary source says—with clear origin labels and
+      the same status vocabulary as the computer-to-computer feed (the API).</p>
 
     <!-- Use case 1: Onboarding file pass result -->
     <h3 style="margin: 18px 0 6px;">Use Case 1 — Implementation user runs the pre-go-live file pass</h3>
@@ -893,10 +917,9 @@ stateDiagram-v2
         </table>
 
         <div class="callout good" style="margin-top:12px;">
-          <strong>Acceptance shape.</strong> Even when the system can't finish a row, the original client
-          fields are returned and the row is flagged. Reruns of a corrected file do not double-count completed
-          work — the run is keyed by <code>(client_id, population_id, file_hash)</code>.
-        </div>
+          <strong>What “done” looks like for the file pass.</strong> If automation cannot finish a row, the response still includes the client’s original fields,
+          marks the row for follow-up, and never drops it from the run. When the client uploads a corrected file, reruns de-duplicate work using a stable key such as
+          <code>(client_id, population_id, file_hash)</code> so completed rows are not paid for twice.</div>
       </div>
     </div>
 
@@ -947,10 +970,9 @@ stateDiagram-v2
         </div>
 
         <div class="callout" style="margin-top:12px;">
-          <strong>Notice the framing.</strong> The screen never says "fix our profile". The center column shows
-          <em>what PT knows</em> (including confirmed aliases) and the right column shows <em>what the board says</em>.
-          The client's own submission is preserved on the left.
-        </div>
+          <strong>How the conflict screen should read.</strong> Nothing on this page tells the user their first job is to “fix ProviderTrust’s profile.”
+          The left column keeps <em>what the client submitted</em>. The center shows <em>what ProviderTrust already knows</em>, including confirmed aliases.
+          The right column shows <em>what the licensing board published</em>. That three-way layout keeps compliance conversations honest.</div>
       </div>
     </div>
 
@@ -993,9 +1015,8 @@ stateDiagram-v2
         </div>
 
         <div class="callout" style="margin-top:12px;">
-          <strong>Internal only.</strong> This view is gated behind RBAC and is <em>not</em> the foundation of a
-          client-facing audit feed. The client-facing version of "what changed?" is intentionally out of scope for 3.0.
-        </div>
+          <strong>Internal operators only.</strong> This investigator view sits behind role-based access control (RBAC). It helps ProviderTrust staff answer
+          “what changed?” without replacing a full customer audit product. A client-facing stream of every change is intentionally out of scope for version 3.0.</div>
       </div>
     </div>
   </div>
@@ -1005,11 +1026,10 @@ stateDiagram-v2
 <section class="section" id="api-section">
   <span class="section-anchor" id="api"></span>
   <div class="wrap">
-    <h2>API contracts — placeholders for EM refinement</h2>
+    <h2>API contracts — draft sketches for engineering managers to refine</h2>
     <p class="section-lede">
-      Six conceptual sketches. Paths and verbs are illustrative until engineering applies its naming and
-      versioning conventions. They are intentionally <em>not</em> a JSON-schema commitment yet.
-    </p>
+      The six rows below are draft endpoint sketches. HTTP verbs and paths stay illustrative until engineering leadership aligns naming,
+      versioning, and security boundaries. Nothing here is a committed JSON schema or contract; it is a shared vocabulary for workshops.</p>
 
     <table class="tbl">
       <thead><tr><th>Verb</th><th>Sketch path</th><th>Purpose</th><th>Owning epic</th></tr></thead>
@@ -1077,9 +1097,8 @@ stateDiagram-v2
 }</pre>
 
         <div class="callout warn" style="margin-top:8px;">
-          <strong>Invariant.</strong> <code>silent_drop</code> must always be <code>false</code> for any row
-          present in a submitted file. Tests in Epic 2 should assert this for every fixture.
-        </div>
+          <strong>Non-negotiable for Epic 2.</strong> The <code>silent_drop</code> flag must remain <code>false</code> for every row that appeared in an uploaded file.
+          Automated tests for the onboarding file pass should assert that invariant on every fixture so a silent omission can never slip through.</div>
       </div>
     </div>
   </div>
@@ -1089,12 +1108,10 @@ stateDiagram-v2
 <section class="section" id="rbac-section">
   <span class="section-anchor" id="rbac"></span>
   <div class="wrap">
-    <h2>RBAC matrix (Epic 8 — read this before any UI work)</h2>
+    <h2>Role-based access control (RBAC) matrix — Epic 8 (read before building UI)</h2>
     <p class="section-lede">
-      The internal role model is <strong>Decision 8 — still open</strong>. The matrix below is the working
-      assumption derived from the requirements and is what code should be designed against until Product
-      finalizes the role names.
-    </p>
+      Decision 8 on the internal role model is <strong>still open</strong>. The matrix below is the working assumption pulled from the requirements documents;
+      build toward it, but expect Product and Operations to rename or tune roles before launch. When in doubt, default to the least privilege that still lets pilots succeed.</p>
 
     <table class="tbl">
       <thead><tr>
@@ -1158,6 +1175,8 @@ stateDiagram-v2
     <div class="grid cols-2" style="margin-top:14px;">
       <div class="card">
         <h3>Permission tag pattern</h3>
+        <p style="margin-top:0;color:var(--ink-soft);font-size:13.5px;">Each capability maps to a permission tag, and tags attach to access roles. When a tag is marked for ProviderTrust-only
+          internal work, global client roles must receive a hard denial—even if a screen URL leaks.</p>
         <pre class="code"><span class="c">// Permission tags map to AccessRoles. PT-Only must DENY for Global-Client roles.</span>
 permissions:
   - id: <span class="s">"dnpi.onboarding.upload"</span>
@@ -1173,8 +1192,8 @@ permissions:
       </div>
       <div class="card">
         <h3>Read-only failure mode</h3>
-        <p>A read-only user attempting an upload or accept/reject must see a <strong>clear, identical message</strong>
-          in PTApp and from the API — same idea as Epic 1's "one vocabulary" rule.</p>
+        <p>A read-only user who tries to upload a roster or resolve a conflict should see the <strong>same plain-English explanation</strong> in the web app (PTApp)
+          and in the error payload from the computer-to-computer feed (the API)—the same “one vocabulary” discipline as Epic 1, applied to permission errors.</p>
         <pre class="code"><span class="c">// 403 response shape (PTApp surfaces the same wording)</span>
 {
   <span class="n">"error"</span>: <span class="s">"FORBIDDEN_ROLE"</span>,
@@ -1193,9 +1212,8 @@ permissions:
   <div class="wrap">
     <h2>Migration &amp; cutover (Epic 9) — pilot first</h2>
     <p class="section-lede">
-      The traditional → DNPI conversion is usually a <strong>per-client</strong> switch, not an org-wide flip.
-      The sequence below is the working playbook.
-    </p>
+      Moving from traditional monitoring to Dynamic NPI is most often a <strong>per-client</strong> switch rather than flipping every tenant in the company on the same day.
+      The flow diagram below is the playbook we expect operations and engineering to follow together.</p>
 
     <div class="diagram">
       <div class="mermaid">
@@ -1215,30 +1233,30 @@ flowchart LR
 
     <div class="grid cols-3" style="margin-top:14px;">
       <div class="card">
-        <h3>Pre-cutover checklist</h3>
+        <h3>Before you cut a pilot over</h3>
         <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
-          <li>Baseline subject count + active alert volume</li>
-          <li>Status mapping table reviewed for this tenant's data</li>
-          <li>Alias confirmations spot-checked</li>
-          <li>RBAC posture verified for tenant's actual users</li>
-          <li>Rollback runbook signed by EM + CS</li>
+          <li>Capture baseline counts of monitored subjects and open alerts.</li>
+          <li>Review the status-mapping table against this tenant’s live data quirks.</li>
+          <li>Spot-check a handful of alias confirmations for obvious mistakes.</li>
+          <li>Confirm role-based access control matches the real user list for that client.</li>
+          <li>Have the engineering manager and Client Success sign the rollback runbook.</li>
         </ul>
       </div>
       <div class="card">
-        <h3>During cutover — guardrails</h3>
+        <h3>During the cutover window</h3>
         <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
-          <li>Alert delta within ±X% of baseline (tune per pilot)</li>
-          <li>No new "fix our profile" wording on any client surface</li>
-          <li>Provenance shifts produce no duplicate alerts</li>
-          <li>Termed / deactivated subjects excluded from re-cycles</li>
+          <li>Keep the change in alert volume within the agreed band versus baseline (exact percentage is tuned per pilot).</li>
+          <li>Do not introduce new client copy that implies the customer must “fix ProviderTrust’s aggregate profile.”</li>
+          <li>When credential origin shifts, avoid duplicate alerts for the same underlying issue.</li>
+          <li>Exclude termed or deactivated subjects from automated re-check loops.</li>
         </ul>
       </div>
       <div class="card">
-        <h3>If we have to roll back</h3>
+        <h3>If you need to roll back</h3>
         <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
-          <li>Flip the tenant flag → behavior reverts to legacy paths</li>
-          <li>Capture a postmortem with delta tables + alert diff</li>
-          <li>Update Decision 7 evidence with what we learned</li>
+          <li>Turn off the Dynamic NPI pilot flag for that tenant so legacy behavior returns immediately.</li>
+          <li>Write a short postmortem that includes before/after tables and the alert diff.</li>
+          <li>Feed lessons learned back into Decision 7 (cutover strategy) so the next pilot benefits.</li>
         </ul>
       </div>
     </div>
@@ -1250,7 +1268,7 @@ flowchart LR
   <span class="section-anchor" id="glossary"></span>
   <div class="wrap">
     <h2>Glossary &amp; pointers back to source</h2>
-    <p class="section-lede">If you only read one supporting doc per area, read these.</p>
+    <p class="section-lede">Use this table as a reading list: each row highlights where to go deeper if you own one slice of the program.</p>
 
     <table class="tbl">
       <thead><tr><th>Term / area</th><th>What it means here</th><th>Source</th></tr></thead>
