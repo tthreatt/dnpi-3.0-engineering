@@ -756,30 +756,24 @@ flowchart LR
       until the system can corroborate it against a primary source. The state machine below is the contract.
     </p>
 
-    <div class="grid cols-2">
-      <div class="diagram">
-        <div class="mermaid">
-%%{init: {"theme":"neutral","themeVariables":{"fontSize":"13px"}}}%%
+    <div class="diagram" style="width:100%; margin: 0 auto;">
+      <div class="mermaid" style="min-width:500px; font-size:15px;">
+%%{init: {"theme":"neutral","themeVariables":{"fontSize":"16px","fontFamily":"'Inter','Segoe UI',sans-serif","primaryColor":"#f8fafc","primaryBorderColor":"#416fbe","primaryTextColor":"#0b2544","noteBorderRadius":"8px","noteBkgColor":"#e9f2fc","noteTextColor":"#205080"}}}%%
 stateDiagram-v2
   direction LR
-  [*] --> TemporaryHeld: client/CAQH<br/>variant captured
-  TemporaryHeld --> Confirmed: NPI + license + board<br/>coherence proven
-  TemporaryHeld --> RejectedInternal: contradicted by<br/>primary source
-  Confirmed --> Known: persisted on<br/>profile (cross-lookup)
+  [*] --> TemporaryHeld: client/CAQH\nvariant captured
+  TemporaryHeld --> Confirmed: NPI + license + board\ncoherence proven
+  TemporaryHeld --> RejectedInternal: contradicted by\nprimary source
+  Confirmed --> Known: persisted on\nprofile (cross-lookup)
   Known --> [*]
   RejectedInternal --> [*]
   note right of TemporaryHeld
-    Internal-only.
-    NEVER visible to clients.
+    Internal-only.\nNEVER visible to clients.
   end note
   note right of Confirmed
-    Persistent.
-    May appear under PT profile/center
-    (NOT in &quot;client data&quot; column).
+    Persistent.\nMay appear under PT profile/center\n(NOT in "client data" column).
   end note
-        </div>
       </div>
-
     </div>
     <!-- Move card below the mermaid diagram for full-width diagram -->
     <div class="card" style="margin-top:22px;">
