@@ -535,15 +535,21 @@ flowchart BT
     <p class="section-lede">Three milestones, sized to keep the MVP truthful and to keep lifecycle packaging
       from quietly absorbing the program.</p>
 
-    <div class="card">
-      <div class="ms-bar"><div class="ms-label">M1</div><div class="ms-track"><div class="ms-fill m1">M1 · Foundation &amp; internal validation</div></div></div>
-      <div class="ms-bar"><div class="ms-label">M2</div><div class="ms-track"><div class="ms-fill m2">M2 · Core verification MVP (client-visible value)</div></div></div>
-      <div class="ms-bar">
-        <div class="ms-label">M3</div>
-        <div class="ms-track">
-          <div class="ms-fill m3">
-            <span style="white-space:nowrap;">M3 · Lifecycle packaging</span>
-            <span style="font-size:12px; opacity:0.75;"> (gated on Decision&nbsp;2)</span>
+    <div class="grid cols-3">
+      <div class="card" style="padding-bottom:0;">
+        <div class="ms-bar"><div class="ms-label">M1</div><div class="ms-track"><div class="ms-fill m1">M1 · Foundation &amp; internal validation</div></div></div>
+      </div>
+      <div class="card" style="padding-bottom:0;">
+        <div class="ms-bar"><div class="ms-label">M2</div><div class="ms-track"><div class="ms-fill m2">M2 · Core verification MVP (client-visible value)</div></div></div>
+      </div>
+      <div class="card" style="padding-bottom:0;">
+        <div class="ms-bar">
+          <div class="ms-label">M3</div>
+          <div class="ms-track">
+            <div class="ms-fill m3">
+              <span style="white-space:nowrap;">M3 · Lifecycle packaging</span>
+              <span style="font-size:12px; opacity:0.75;"> (gated on Decision&nbsp;2)</span>
+            </div>
           </div>
         </div>
       </div>
@@ -609,52 +615,58 @@ flowchart LR
       </div>
     </div>
 
-    <div class="grid cols-2" style="margin-top:14px;">
-      <div class="card epic must"><div class="num">1</div><div class="body">
-        <h4>Status, origin &amp; API/UI parity <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
-        <p>Same status words in PTApp and API. Each fact carries an origin label.
-          "Stale" ≠ failure. "Not found" ≠ "we never checked".</p>
-      </div></div>
-      <div class="card epic must"><div class="num">2</div><div class="body">
-        <h4>Pre-go-live onboarding file pass <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
-        <p>Every row gets an answer. Partial failure returns the client's fields and flags for review.
-          Reruns supported without operational duplication.</p>
-      </div></div>
-      <div class="card epic must"><div class="num">3</div><div class="body">
-        <h4>Profile alias triangulation <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
-        <p>NPI + license + board coherence promotes a name variant from <em>temporary</em> to <em>confirmed</em>
-          to <em>known</em>. Temporary stays internal.</p>
-      </div></div>
-      <div class="card epic must"><div class="num">4</div><div class="body">
-        <h4>Conflict UX &amp; reconciliation <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
-        <p>Submitted vs primary source side-by-side. Accept/reject where required. Alerts when rules say so.
-          Different messaging for zero credentials vs incomplete NPPES-only.</p>
-      </div></div>
-      <div class="card epic serious"><div class="num">5</div><div class="body">
-        <h4>Monitoring &amp; alerts <span class="pill warn" style="margin-left:6px;">Serious for launch</span></h4>
-        <p>Federal-style hits surface as urgent. Human-needed work doesn't auto-dismiss on a timer.
-          Deactivated, termed, delisted, and brand-new NPIs handled honestly.</p>
-      </div></div>
-      <div class="card epic gated"><div class="num">6</div><div class="body">
-        <h4>Lifecycle packages <span class="pill neutral" style="margin-left:6px;">Gated on Decision 2</span></h4>
-        <p>Named packages (initial / ongoing / re-cred) with stable return shapes. PT configures, client doesn't
-          self-filter. Additive fields are universal per object.</p>
-      </div></div>
-      <div class="card epic must"><div class="num">7</div><div class="body">
-        <h4>PT-admin internal audit <span class="pill bad" style="margin-left:6px;">Must-have (internal)</span></h4>
-        <p>RBAC-gated timeline of alias transitions, license verifications/removals, primary-source mismatches,
-          demographic shifts, lifecycle transitions, manual overrides.</p>
-      </div></div>
-      <div class="card epic must"><div class="num">8</div><div class="body">
-        <h4>RBAC &amp; feature flags <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
-        <p>Read-only blocks upload/accept/reject with clear messages. PT-Only tags <strong>deny</strong>
-          for Global-Client roles. Per-client / cohort flags for safe rollout.</p>
-      </div></div>
-      <div class="card epic"><div class="num">9</div><div class="body">
-        <h4>Migration &amp; cutover <span class="pill warn" style="margin-left:6px;">Pilot first</span></h4>
-        <p>Per-client conversion with before/after counts, alert volume monitoring, rollback,
-          and runbooks for deactivated / fee / type-mismatch edge cases.</p>
-      </div></div>
+    <div class="grid cols-2" style="margin-top:14px; gap: 32px;">
+      <!-- Group 1: 1, 3, 4, 5, 6 -->
+      <div>
+        <div class="card epic must"><div class="num">1</div><div class="body">
+          <h4>Status, origin &amp; API/UI parity <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
+          <p>Same status words in PTApp and API. Each fact carries an origin label.
+            "Stale" ≠ failure. "Not found" ≠ "we never checked".</p>
+        </div></div>
+        <div class="card epic must"><div class="num">3</div><div class="body">
+          <h4>Profile alias triangulation <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
+          <p>NPI + license + board coherence promotes a name variant from <em>temporary</em> to <em>confirmed</em>
+            to <em>known</em>. Temporary stays internal.</p>
+        </div></div>
+        <div class="card epic must"><div class="num">4</div><div class="body">
+          <h4>Conflict UX &amp; reconciliation <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
+          <p>Submitted vs primary source side-by-side. Accept/reject where required. Alerts when rules say so.
+            Different messaging for zero credentials vs incomplete NPPES-only.</p>
+        </div></div>
+        <div class="card epic serious"><div class="num">5</div><div class="body">
+          <h4>Monitoring &amp; alerts <span class="pill warn" style="margin-left:6px;">Serious for launch</span></h4>
+          <p>Federal-style hits surface as urgent. Human-needed work doesn't auto-dismiss on a timer.
+            Deactivated, termed, delisted, and brand-new NPIs handled honestly.</p>
+        </div></div>
+        <div class="card epic gated"><div class="num">6</div><div class="body">
+          <h4>Lifecycle packages <span class="pill neutral" style="margin-left:6px;">Gated on Decision 2</span></h4>
+          <p>Named packages (initial / ongoing / re-cred) with stable return shapes. PT configures, client doesn't
+            self-filter. Additive fields are universal per object.</p>
+        </div></div>
+      </div>
+      <!-- Group 2: 2, 7, 8, 9 -->
+      <div>
+        <div class="card epic must"><div class="num">2</div><div class="body">
+          <h4>Pre-go-live onboarding file pass <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
+          <p>Every row gets an answer. Partial failure returns the client's fields and flags for review.
+            Reruns supported without operational duplication.</p>
+        </div></div>
+        <div class="card epic must"><div class="num">7</div><div class="body">
+          <h4>PT-admin internal audit <span class="pill bad" style="margin-left:6px;">Must-have (internal)</span></h4>
+          <p>RBAC-gated timeline of alias transitions, license verifications/removals, primary-source mismatches,
+            demographic shifts, lifecycle transitions, manual overrides.</p>
+        </div></div>
+        <div class="card epic must"><div class="num">8</div><div class="body">
+          <h4>RBAC &amp; feature flags <span class="pill bad" style="margin-left:6px;">Must-have</span></h4>
+          <p>Read-only blocks upload/accept/reject with clear messages. PT-Only tags <strong>deny</strong>
+            for Global-Client roles. Per-client / cohort flags for safe rollout.</p>
+        </div></div>
+        <div class="card epic"><div class="num">9</div><div class="body">
+          <h4>Migration &amp; cutover <span class="pill warn" style="margin-left:6px;">Pilot first</span></h4>
+          <p>Per-client conversion with before/after counts, alert volume monitoring, rollback,
+            and runbooks for deactivated / fee / type-mismatch edge cases.</p>
+        </div></div>
+      </div>
     </div>
 
     <p class="muted" style="margin-top:8px;">
@@ -768,11 +780,13 @@ stateDiagram-v2
         </div>
       </div>
 
-      <div class="card">
-        <h3>Promotion rule (read this carefully)</h3>
-        <p>"The client said it's the same person" is <strong>not enough</strong> by itself.
-          Triangulation requires NPI + name signal + credential coherence supported by a primary source.</p>
-        <pre class="code"><span class="c">// Promotion guard for Temporary → Confirmed</span>
+    </div>
+    <!-- Move card below the mermaid diagram for full-width diagram -->
+    <div class="card" style="margin-top:22px;">
+      <h3>Promotion rule (read this carefully)</h3>
+      <p>"The client said it's the same person" is <strong>not enough</strong> by itself.
+        Triangulation requires NPI + name signal + credential coherence supported by a primary source.</p>
+      <pre class="code"><span class="c">// Promotion guard for Temporary → Confirmed</span>
 <span class="k">function</span> <span class="p">canPromote</span>(alias, evidence) {
   <span class="k">return</span> evidence.npi.matches(alias.npi)
       &amp;&amp; evidence.licenseNumber.matchesBoard(alias.licenseNumber)
@@ -784,11 +798,10 @@ stateDiagram-v2
       &amp;&amp; <span class="p">!</span>clientAttestationOnly(evidence);  <span class="c">// hard NO</span>
 }</pre>
 
-        <div class="callout">
-          Promotion <em>into</em> the proprietary profile store (PPS) and reuse <em>across</em> clients is
-          <strong>Decision 3 — still open</strong>. Until that closes, treat promoted aliases as scoped to the
-          originating client and flag them for compliance review before any cross-tenant reuse.
-        </div>
+      <div class="callout">
+        Promotion <em>into</em> the proprietary profile store (PPS) and reuse <em>across</em> clients is
+        <strong>Decision 3 — still open</strong>. Until that closes, treat promoted aliases as scoped to the
+        originating client and flag them for compliance review before any cross-tenant reuse.
       </div>
     </div>
   </div>
