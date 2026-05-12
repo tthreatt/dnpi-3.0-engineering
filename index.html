@@ -106,6 +106,88 @@
     header.hero h1 { font-size: 30px; }
   }
 
+  /* Story section: linear read (not a card grid) */
+  .story-stack {
+    max-width: 880px;
+    margin: 4px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .story-stack .card.story-card { margin: 0; }
+  .story-stack .story-card ~ .story-card { margin-top: 14px; }
+  .story-card h3 { margin-top: 6px; }
+  .story-bridge {
+    margin: 10px 0 8px 2px;
+    padding: 8px 0 8px 14px;
+    border-left: 3px solid var(--accent);
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    line-height: 1.45;
+    max-width: 820px;
+  }
+  .story-bridge strong { color: var(--ink); font-weight: 650; }
+  .story-parallel {
+    margin-top: 8px;
+    border-style: dashed;
+    border-color: var(--line-strong);
+    background: linear-gradient(180deg, var(--panel-soft), var(--panel));
+  }
+  .story-parallel .eyebrow {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  /* Milestones: vertical story (avoid wide dependency table) */
+  .ms-flow { max-width: 900px; margin-top: 8px; }
+  .ms-flow > .card.ms-milestone { margin: 0; border-left: 4px solid var(--ms-accent, var(--accent)); }
+  .ms-milestone.ms-m1 { --ms-accent: #2f5bff; }
+  .ms-milestone.ms-m2 { --ms-accent: #1a8a55; }
+  .ms-milestone.ms-m3 { --ms-accent: #7c5ce0; }
+  .ms-milestone .ms-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; margin-bottom: 4px; }
+  .ms-milestone .ms-head h3 { margin: 0; font-size: 17px; }
+  .ms-epic-chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin: 12px 0 6px;
+  }
+  .ms-epic-chips .ec {
+    font-size: 12px; font-weight: 600;
+    padding: 5px 10px; border-radius: 10px;
+    background: var(--panel-soft); border: 1px solid var(--line);
+    color: var(--ink);
+  }
+  .ms-epic-chips .ec span { font-weight: 500; color: var(--ink-soft); font-size: 11.5px; margin-left: 4px; }
+  .ms-edges-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted);
+    margin: 12px 0 6px;
+  }
+  .ms-edges {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px;
+    margin: 0 0 8px;
+  }
+  .ms-edges .edge {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    padding: 3px 8px; border-radius: 6px;
+    background: #0d1430; color: #c8d4ff;
+    border: 1px solid #1a2056;
+  }
+  .ms-edges .edge-warn { background: var(--warn-soft); color: #5b3b06; border-color: #f3dcb1; }
+  .ms-milestone .ms-body { margin: 0 0 4px; color: var(--ink-soft); font-size: 14px; line-height: 1.5; }
+  .ms-milestone h4.ms-exit {
+    margin: 16px 0 8px; font-size: 13px; font-weight: 700; color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .ms-milestone ul.ms-exit-list {
+    margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 13.5px; line-height: 1.45;
+  }
+  .ms-milestone ul.ms-exit-list li { margin: 5px 0; }
+
   /* Pills / status */
   .pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600; border: 1px solid; }
   .pill.dot::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
@@ -351,55 +433,70 @@
       versus <em>re-credentialing</em>.
     </p>
 
-    <div class="grid cols-3">
-      <div class="card">
+    <div class="story-stack">
+      <article class="card story-card">
         <span class="pill info dot">Now — roughly zero to four weeks</span>
-        <h3 style="margin-top:6px;">Phase 0 — Decisions</h3>
+        <h3>Phase 0 — Decisions</h3>
         <p>Finish the open calls on minimum viable product (MVP) scope, how lifecycle requests should look on the wire,
           alias reuse and cross-client policy, what happens when file uploads change shape, how “origin” shifts when a
           credential moves from client-supplied to DNPI-led, how today’s internal statuses map to the new vocabulary,
           cutover strategy, and the internal role model. Each topic has one directly responsible individual (DRI) who drives
           the answer.</p>
-      </div>
-      <div class="card">
+      </article>
+
+      <p class="story-bridge"><strong>Once those calls are closed</strong> (or explicitly deferred with risk written down),
+        engineering can treat the design as stable enough to build on—instead of freezing scope every time a definition moves.</p>
+
+      <article class="card story-card">
         <span class="pill accent dot">Milestone 1 — Foundation</span>
-        <h3 style="margin-top:6px;">Trustworthy internals</h3>
+        <h3>Trustworthy internals</h3>
         <p>One canonical status list, clear attribution for where each fact came from, a small bridge of about five fields from
           the verification application (VAP) into Monitor so production paths stay coherent, pilot feature flags, an early
           ProviderTrust-admin audit experience, the RBAC design intent, and a mapping table from legacy internal states to the
           new client-facing words.</p>
-      </div>
-      <div class="card">
+      </article>
+
+      <p class="story-bridge"><strong>With the foundation in place,</strong> the team can ship what clients actually touch
+        without constantly revisiting invisible state definitions.</p>
+
+      <article class="card story-card">
         <span class="pill good dot">Milestone 2 — Core minimum viable product</span>
-        <h3 style="margin-top:6px;">Client-visible value</h3>
+        <h3>Client-visible value</h3>
         <p>The end-to-end onboarding file pass; alias triangulation; conflict screens and workflows; monitoring alerts that
           treat seriousness seriously and never time out real human work; honest handling of deactivated credentials, manual
           steps, and paid-board fees; and verification that runs on production data—staging-only checks cannot be the only
           place problems surface.</p>
-      </div>
-    </div>
+      </article>
 
-    <div class="grid cols-3" style="margin-top:14px;">
-      <div class="card">
+      <article class="card story-card story-parallel">
+        <span class="eyebrow">In parallel from Milestone 1 through Milestone 2</span>
+        <span class="pill neutral dot">Cross-cutting</span>
+        <h3>RBAC, flags, and audit</h3>
+        <p>We set RBAC direction in Milestone 1 and carry enforcement through Epics 1–9. Pilot and cohort feature flags limit
+          how many clients see a change at once. The audit experience is thin in Milestone 1 and stronger in Milestone 2.</p>
+      </article>
+
+      <p class="story-bridge"><strong>When Decision 2 (lifecycle request shape) is firm,</strong> Milestone 3 can move from
+        draft to predictable API contracts—until then, packaging language stays a program risk, not a delivery commitment.</p>
+
+      <article class="card story-card">
         <span class="pill warn dot">Milestone 3 — Conditional</span>
-        <h3 style="margin-top:6px;">Lifecycle packaging</h3>
+        <h3>Lifecycle packaging</h3>
         <p>Named packages for initial, ongoing, and re-credentialing moments, each with predictable fields in the response
           <em>only after</em> Decision 2 (lifecycle request shape) closes. If that decision slips, Milestone 3 stays a draft
           and Epic 6 on lifecycle may need its own engineering requirements document (ERD).</p>
-      </div>
-      <div class="card">
-        <span class="pill neutral dot">Cross-cutting</span>
-        <h3 style="margin-top:6px;">RBAC, flags, and audit</h3>
-        <p>We set RBAC direction in Milestone 1 and carry enforcement through Epics 1–9. Pilot and cohort feature flags limit
-          how many clients see a change at once. The audit experience is thin in Milestone 1 and stronger in Milestone 2.</p>
-      </div>
-      <div class="card">
+      </article>
+
+      <p class="story-bridge"><strong>Cutover is how the story lands in production:</strong> one pilot at a time, measured,
+        and reversible—rather than assuming a single flip for the whole company.</p>
+
+      <article class="card story-card">
         <span class="pill bad dot">Pilot first</span>
-        <h3 style="margin-top:6px;">Cutover</h3>
+        <h3>Cutover</h3>
         <p>Move one pilot client at a time with a written runbook, before-and-after counts of subjects and alerts, and a clear
           rollback switch. Retiring the legacy experience for the whole company in a single “big bang” is a long-term hope, not
           a commitment in the 3.0 plan.</p>
-      </div>
+      </article>
     </div>
   </div>
 </section>
@@ -560,19 +657,14 @@ flowchart BT
   <div class="wrap">
     <h2>Milestones &amp; sequencing</h2>
     <p class="section-lede">We split the program into three milestones so the minimum viable product (MVP) stays honest—lifecycle packaging cannot quietly
-      swallow every other epic without Product’s explicit decision on request shape (Decision 2).</p>
+      swallow every other epic without Product’s explicit decision on request shape (Decision 2). Each milestone is a <strong>delivery beat</strong> in a single story:
+      epics listed below are the cast; <strong>monospace edge tags</strong> mirror arrows in the <a href="#epics">nine-epic graph</a> (not a second source of truth).</p>
 
-    <!-- 
-      Rewriting the milestone timeline to closely match the style and arrangement in the provided screenshot:
-      - Milestone bars should be shorter, colored, and inline with subtle connector lines between each.
-      - Milestone numbers above, bars below, labels under bars, secondary text in smaller/lighter font.
-      - Strive for horizontal, visually tidy, modern appearance as in the screenshot.
-    -->
     <div class="ms-timeline" style="display:flex;align-items:flex-end;gap:36px;margin:26px 0 16px 0;justify-content:flex-start;">
       <!-- M1 -->
       <div style="display:flex;flex-direction:column;align-items:center;">
         <div class="ms-label" style="font-size:15px; font-weight:600; color:#272d38; margin-bottom:8px;">Milestone 1</div>
-        <div class="ms-bar" style="width:90px; height:5px; border-radius:7px; background:linear-gradient(90deg, #2355bc 60%, #384478 100%); box-shadow:0 1px 2px #dde6fa, 0 0.5px 0 #d3daf4; margin-bottom:8px;"></div>
+        <div style="width:90px; height:5px; border-radius:7px; background:linear-gradient(90deg, #2355bc 60%, #384478 100%); box-shadow:0 1px 2px #dde6fa, 0 0.5px 0 #d3daf4; margin-bottom:8px;"></div>
         <div style="font-size:13px; line-height:1.25; color:#151717; font-weight:500; text-align:center;">
           Foundation &amp; internal validation
         </div>
@@ -582,7 +674,7 @@ flowchart BT
       <!-- M2 -->
       <div style="display:flex;flex-direction:column;align-items:center;">
         <div class="ms-label" style="font-size:15px; font-weight:600; color:#272d38; margin-bottom:8px;">Milestone 2</div>
-        <div class="ms-bar" style="width:90px; height:5px; border-radius:7px; background:linear-gradient(90deg, #17a359 60%, #22ba6b 100%); box-shadow:0 1px 2px #d7f6e2, 0 0.5px 0 #b8e9cc; margin-bottom:8px;"></div>
+        <div style="width:90px; height:5px; border-radius:7px; background:linear-gradient(90deg, #17a359 60%, #22ba6b 100%); box-shadow:0 1px 2px #d7f6e2, 0 0.5px 0 #b8e9cc; margin-bottom:8px;"></div>
         <div style="font-size:13px; line-height:1.25; color:#151717; font-weight:500; text-align:center;">
           Core verification minimum viable product<br>
           <span style="font-size:12px; color:#22ba6b; font-weight:400;">(client-visible value)</span>
@@ -593,7 +685,7 @@ flowchart BT
       <!-- M3 -->
       <div style="display:flex;flex-direction:column;align-items:center;">
         <div class="ms-label" style="font-size:15px; font-weight:600; color:#272d38; margin-bottom:8px;">Milestone 3</div>
-        <div class="ms-bar" style="width:90px; height:5px; border-radius:7px; background:linear-gradient(90deg, #8560e3 60%, #a48bff 100%); box-shadow:0 1px 2px #ede6fe, 0 0.5px 0 #dcd1fa; margin-bottom:8px;"></div>
+        <div style="width:90px; height:5px; border-radius:7px; background:linear-gradient(90deg, #8560e3 60%, #a48bff 100%); box-shadow:0 1px 2px #ede6fe, 0 0.5px 0 #dcd1fa; margin-bottom:8px;"></div>
         <div style="font-size:13px; line-height:1.25; color:#151717; font-weight:500; text-align:center;">
           Lifecycle packaging<br>
           <span style="font-size:12px; color:#a48bff; opacity:0.75; font-weight:400;">(waits on Decision&nbsp;2)</span>
@@ -601,35 +693,95 @@ flowchart BT
       </div>
     </div>
 
-    <div class="grid cols-3" style="margin-top:14px;">
-      <div class="card">
-        <span class="pill accent">Milestone 1 exit criteria</span>
-        <h3 style="margin-top:6px;">Trustworthy internals</h3>
-        <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
+    <div class="story-stack ms-flow">
+      <article class="card story-card ms-milestone ms-m1">
+        <div class="ms-head">
+          <span class="pill accent dot">Milestone 1</span>
+          <h3>Trustworthy internals</h3>
+        </div>
+        <div class="ms-epic-chips" aria-label="Epics in this milestone">
+          <span class="ec">1 <span>Status &amp; origin</span></span>
+          <span class="ec">8 <span>RBAC &amp; flags</span></span>
+          <span class="ec">7 <span>Internal audit (first slice)</span></span>
+        </div>
+        <div class="ms-edges-label">Spine unlocks · outgoing from 1 &amp; 8</div>
+        <div class="ms-edges" aria-label="Dependency graph edges from epics 1 and 8">
+          <span class="edge">1→3</span><span class="edge">1→4</span><span class="edge">1→5</span>
+          <span class="edge">8→2</span><span class="edge">8→7</span><span class="edge">8→9</span>
+        </div>
+        <p class="ms-body"><strong>Epics 1 and 8</strong> are the spine: vocabulary and gates have to be real before client-heavy epics lean on them.
+          <strong>Epic 7</strong> starts thin so ProviderTrust admins see a real timeline behind RBAC while you add depth in Milestone 2.</p>
+        <h4 class="ms-exit">Exit criteria</h4>
+        <ul class="ms-exit-list">
           <li>At least twenty golden test fixtures show the web app (PTApp) and the computer-to-computer feed (the API) returning the <strong>same</strong> status for the same situation.</li>
           <li>The Dynamic NPI pilot feature flag applies to at least one tenant while every other tenant behaves exactly as before.</li>
           <li>A ProviderTrust administrator can open a “what changed?” timeline for the events we instrument in this milestone.</li>
         </ul>
-      </div>
-      <div class="card">
-        <span class="pill good">Milestone 2 exit criteria</span>
-        <h3 style="margin-top:6px;">Client-visible value</h3>
-        <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
+      </article>
+
+      <p class="story-bridge"><strong>Then</strong> open client-visible work: file pass, aliases, conflicts, monitoring, and pilot cutover—still respecting the arrows above (for example <strong>3 before 4</strong>).</p>
+
+      <article class="card story-card ms-milestone ms-m2">
+        <div class="ms-head">
+          <span class="pill good dot">Milestone 2</span>
+          <h3>Client-visible value (+ pilot rollout)</h3>
+        </div>
+        <div class="ms-epic-chips" aria-label="Epics in this milestone">
+          <span class="ec">2 <span>Onboarding file pass</span></span>
+          <span class="ec">3 <span>Aliases</span></span>
+          <span class="ec">4 <span>Conflict UX</span></span>
+          <span class="ec">5 <span>Monitoring &amp; alerts</span></span>
+          <span class="ec">7 <span>Audit (deeper)</span></span>
+          <span class="ec">9 <span>Migration &amp; cutover — pilot</span></span>
+        </div>
+        <div class="ms-edges-label">Chains chiefly closed in this beat</div>
+        <div class="ms-edges" aria-label="Dependency graph edges for milestone 2">
+          <span class="edge">3→4</span>
+          <span class="edge">2→9</span>
+        </div>
+        <p class="ms-body"><strong>Epic 6</strong> stays <em>out</em> of this milestone—it waits on Decision 2. <strong>Epic 9</strong> is the rollout track:
+          it ramps with pilots as <strong>2</strong> and <strong>8</strong> stabilize (see <strong>2→9</strong>), not a fourth bar on the timeline.</p>
+        <h4 class="ms-exit">Exit criteria</h4>
+        <ul class="ms-exit-list">
           <li>Pilot clients receive deterministic, row-level results from the pre-go-live onboarding file pass.</li>
           <li>False “not found” outcomes drop measurably when the license and board already agree on the identity, because alias triangulation works.</li>
           <li>No client-facing copy tells the customer their job is to “fix ProviderTrust’s aggregate profile” by default.</li>
           <li>Temporary alias hints remain <strong>internal</strong> and never appear as if the client typed them.</li>
         </ul>
-      </div>
-      <div class="card">
-        <span class="pill warn">Milestone 3 exit criteria (conditional)</span>
-        <h3 style="margin-top:6px;">Lifecycle packaging</h3>
-        <ul style="margin: 6px 0 0 18px; padding: 0; color: var(--ink-soft); font-size: 13.5px;">
+      </article>
+
+      <p class="story-bridge"><strong>When Decision 2 closes</strong> and conflict/monitoring stories are mature, lifecycle packages can ship as a coherent API surface.</p>
+
+      <article class="card story-card ms-milestone ms-m3">
+        <div class="ms-head">
+          <span class="pill warn dot">Milestone 3 · conditional</span>
+          <h3>Lifecycle packaging</h3>
+        </div>
+        <div class="ms-epic-chips" aria-label="Epics in this milestone">
+          <span class="ec">6 <span>Lifecycle packages</span></span>
+        </div>
+        <div class="ms-edges-label">Into Epic 6 · plus product gate</div>
+        <div class="ms-edges" aria-label="Dependency graph edges into epic 6">
+          <span class="edge">4→6</span>
+          <span class="edge">5→6</span>
+          <span class="edge edge-warn">Decision 2</span>
+        </div>
+        <p class="ms-body"><strong>Epic 6</strong> is gated on <strong>Decision 2</strong> (lifecycle request shape) and logically follows <strong>4</strong> and <strong>5</strong> in the graph.
+          If Decision 2 slips, this milestone stays a draft and Epic 6 may need its own engineering requirements document (ERD).</p>
+        <h4 class="ms-exit">Exit criteria</h4>
+        <ul class="ms-exit-list">
           <li>Product management, engineering, commercial, and Client Success share the same story for how to buy, implement, and consume named lifecycle packages.</li>
           <li>New customers can land on standard packages without a one-off engineering project for each deal.</li>
           <li>Existing customers have a written playbook for converting from their current setup.</li>
         </ul>
-      </div>
+      </article>
+    </div>
+
+    <div class="callout" style="margin-top:18px;">
+      <strong>How to read this.</strong> The horizontal bars are <em>release beats</em>. Each block below is the same beat with <strong>who</strong> (epic chips),
+      <strong>which arrows</strong> you are satisfying (monospace tags), and <strong>what “done” means</strong> (exit criteria). Parallel work is fine where the graph allows—e.g.
+      much of <strong>1</strong> with early <strong>8</strong>—but do not treat <strong>4</strong> as finished before <strong>3</strong> catches up.
+      Full topology: <a href="#epics">nine-epic dependency graph</a>.
     </div>
   </div>
 </section>
@@ -639,10 +791,6 @@ flowchart BT
   <span class="section-anchor" id="epics"></span>
   <div class="wrap">
     <h2>Nine epics &amp; their dependency graph</h2>
-    <p class="section-lede">
-      Epics 1 and 8 are the spine: one shared status vocabulary (Epic 1) and role-based access control plus pilot flags (Epic 8).
-      Everything else hangs from those two. Epic 6 on lifecycle packages waits for Decision 2 (lifecycle request shape).</p>
-
     <div class="diagram">
       <div class="mermaid">
 %%{init: {"theme":"neutral","themeVariables":{"fontSize":"13px"}}}%%
@@ -732,8 +880,8 @@ flowchart LR
   <div class="wrap">
     <h2>Status model — one vocabulary, two surfaces</h2>
     <p class="section-lede">
-      The hardest product promise in 3.0 is simple to say: the web app (PTApp) and the computer-to-computer feed (the API) must use the <strong>same word</strong>
-      for the same real-world condition. The table below lists the canonical client-facing statuses. The card beside it explains how engineering maps today’s internal codes
+      The hardest product promise in 3.0 is simple to say: for the same real-world condition, the web app (PTApp) and the computer-to-computer feed (the API) must expose the <strong>same canonical status</strong>—the
+      same meaning, not just a similar label—plus consistent client-facing detail where it matters (short reasons, conflict actions, fee context, and so on). The table below lists those statuses. The card beside it explains how engineering maps today’s internal codes
       without rewriting every database column overnight.</p>
 
     <div class="grid cols-2">
